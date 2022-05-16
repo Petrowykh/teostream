@@ -1,4 +1,4 @@
-
+import time
 import streamlit as st
 import pandas as pd
 
@@ -38,9 +38,25 @@ def timesheets_create():
 ######### Acts ##########
 def acts_create():
     st.subheader('Акты наемных водителей')
+    placeholder = st.empty()
+    time.sleep(5)
+    # Replace the placeholder with some text:
+    placeholder.text("Hello")
+    time.sleep(5)
+    # Replace the text with a chart:
+    placeholder.line_chart({"data": [1, 5, 2, 6]})
+    time.sleep(5)
+    # Replace the chart with several elements:
+    with placeholder.container():
+        st.write("This is one element")
+        st.write("This is another")
+    time.sleep(5)
+    # Clear all those elements:
+    placeholder.empty()
 
 ######### Trips ############
 def trips_create():
+    data_trips = []
     st.subheader('Командировки')
     trip_data = st.sidebar.date_input('Дата командирвоки', datetime.now()+timedelta(days=1))
     trip_number = st.sidebar.number_input('Номер путевого', format="%d", value=27999)
@@ -58,9 +74,13 @@ def trips_create():
     if trip_check_boy:
         trip_boy = st.sidebar.selectbox('Выберите экспедитора',
         ('Можейко Андрей', 'Ивановский Александр', 'Клюев Сергей'))
-    data10 = tsdb.get_ten()
-    st.table(data10)
-
+    data_trips = tsdb.get_ten()
+    #st.table(data_trips)
+    if st.sidebar.button('Добавить'):
+        #data_trips.append(str(trip_data) + '   ' + trip_driver)
+        st.table(data_trips)
+    if st.button('Уведомение'):
+        st.text('Send')
 
 st.set_page_config(
     page_title='Информационная система',

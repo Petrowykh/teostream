@@ -90,7 +90,7 @@ def draw_table():
         header = header + '<tr>'
         for j in range(0, 30):
             header = header + f'<td {define_color(df_list[i][j])}</td>'
-            #{define_color(df_list[i][j])}
+            
         header = header + '</tr>'
     header = header + '</table>'
     

@@ -11,6 +11,6 @@ class Teo_DB:
         self.connection.close()
 
     def get_ten(self):
-        # first 10 records
+        # first 50 records
         with self.connection:
-            return self.cursor.execute("SELECT * FROM trip LIMIT 50").fetchall()
+            return self.cursor.execute("SELECT * FROM trip LIMIT 10").fetchall()
