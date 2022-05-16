@@ -67,7 +67,7 @@ st.set_page_config(
     page_icon="🧊",
     layout="wide")
      
-st.title('Инофрмационная система ЛУ')
+st.title('Информационная система')
 st.text(f'Сегодня {str(datetime.now())}')
 
 selected = option_menu(
