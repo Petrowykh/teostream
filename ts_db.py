@@ -9,3 +9,8 @@ class Teo_DB:
 
     def close(self):
         self.connection.close()
+
+    def get_ten(self):
+        # first 10 records
+        with self.connection:
+            return self.cursor.execute("SELECT * FROM trip LIMIT 10").fetchall()

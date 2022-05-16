@@ -1,9 +1,4 @@
-
-
 import pandas as pd
-
-import streamlit as st
-import streamlit.components.v1 as components
 
 data = {
     'name': ['Петровых', 'Корнейчик', 'Лепехо', 'Талах'],
@@ -36,9 +31,6 @@ data = {
     '28' : [0,0,0,0],
     '29' : [0,0,0,0],
     '30' : [0,0,0,0],
-    
-    
-
 }
 
 def draw_table():
@@ -103,11 +95,3 @@ def draw_table():
     header = header + '</table>'
     
     return header
-
-
-def app():
-    st.subheader('Табель')
-    choose = st.sidebar.selectbox('Выберите отдел ЛУ',
-                        ('Логистика', 'Мезонин', 'Транспортный'))
-    if st.sidebar.button('Показать') == True:
-        components.html(draw_table(), height=300, scrolling=True)
