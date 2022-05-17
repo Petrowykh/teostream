@@ -56,29 +56,38 @@ def acts_create():
 
 ######### Trips ############
 def trips_create():
-    data_trips = []
+    
     st.subheader('Командировки')
     trip_data = st.sidebar.date_input('Дата командирвоки', datetime.now()+timedelta(days=1))
-    trip_number = st.sidebar.number_input('Номер путевого', format="%d", value=27999)
+
     trip_check_town = st.sidebar.checkbox('Командировка')
+    trip_town = 'Минск'
     if trip_check_town:
         trip_town = st.sidebar.text_input('Маршрут', placeholder='Введите города через пробел')
         trip_days = st.sidebar.slider(
             'Количество дней командировки',
             1, 3, (1))
-    trip_driver = st.sidebar.selectbox('Выберите водителя',
-     ('Колесень Александр', 'Дудорга Роостислав', 'Костицкий Денис'))
-    trip_car = st.sidebar.selectbox('Выберите машину',
-    ('ГАЗ', 'Атега', 'Рено'))
-    trip_check_boy = st.sidebar.checkbox('Экспедитор')
-    if trip_check_boy:
-        trip_boy = st.sidebar.selectbox('Выберите экспедитора',
-        ('Можейко Андрей', 'Ивановский Александр', 'Клюев Сергей'))
-    data_trips = tsdb.get_ten()
-    #st.table(data_trips)
+    else:
+        trip_town = 'Минск'
+        trip_days = 1
+    trip_check_our = st.sidebar.checkbox('Наемный')
+    
+    trip_driver = st.sidebar.selectbox('Выберите водителя', tsdb.get_name(trip_check_our, 'водитель'))
+    trip_car = st.sidebar.selectbox('Выберите машину', tsdb.get_number_car(trip_check_our, trip_driver)[0], index=tsdb.get_number_car(trip_check_our, trip_driver)[1])
+    trip_route = 0
+    trip_forwarder = 0
+    if not(trip_check_our):
+        trip_route = st.sidebar.number_input('Номер путевого', format="%d", value=27999)
+        trip_check_forwarder = st.sidebar.checkbox('Экспедитор')
+        if trip_check_forwarder:
+            trip_forwarder = st.sidebar.selectbox('Выберите экспедитора', tsdb.get_name(trip_check_our, 'экспедитор'))
+            trip_forwarder = tsdb.get_id_emplyee(trip_forwarder)
+    else:
+        trip_route = 0
+        trip_forwarder = 0
     if st.sidebar.button('Добавить'):
-        #data_trips.append(str(trip_data) + '   ' + trip_driver)
-        st.table(data_trips)
+        tsdb.add_trips(trip_route, trip_data, tsdb.get_id_emplyee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
+
     if st.button('Уведомение'):
         st.text('Send')
 
