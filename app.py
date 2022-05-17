@@ -76,15 +76,12 @@ def trips_create():
     trip_car = st.sidebar.selectbox('Выберите машину', tsdb.get_number_car(trip_check_our, trip_driver)[0], index=tsdb.get_number_car(trip_check_our, trip_driver)[1])
     trip_route = 0
     trip_forwarder = 0
-    if not(trip_check_our):
-        trip_route = st.sidebar.number_input('Номер путевого', format="%d", value=27999)
-        trip_check_forwarder = st.sidebar.checkbox('Экспедитор')
-        if trip_check_forwarder:
-            trip_forwarder = st.sidebar.selectbox('Выберите экспедитора', tsdb.get_name(trip_check_our, 'экспедитор'))
-            trip_forwarder = tsdb.get_id_emplyee(trip_forwarder)
-    else:
-        trip_route = 0
-        trip_forwarder = 0
+    trip_route = st.sidebar.number_input('Номер путевого', format="%d", value=int(tsdb.get_last_route()+1), disabled=trip_check_our)
+    trip_check_forwarder = st.sidebar.checkbox('Экспедитор', disabled=trip_check_our)
+    if trip_check_forwarder:
+        trip_forwarder = st.sidebar.selectbox('Выберите экспедитора', tsdb.get_name(trip_check_our, 'экспедитор'))
+        trip_forwarder = tsdb.get_id_emplyee(trip_forwarder)
+    
     if st.sidebar.button('Добавить'):
         tsdb.add_trips(trip_route, trip_data, tsdb.get_id_emplyee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
 

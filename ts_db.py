@@ -45,7 +45,7 @@ class Teo_DB:
 
     def get_last_route(self):
         with self.connection:
-            return self.cursor.execute("SELECT route FROM trips DESC").fetchone()[0]
+            return self.cursor.execute("SELECT route FROM trips WHERE NOT act_ok ORDER BY route DESC").fetchone()[0]
 
     def add_trips(self, route, data_route, driver, days, direction, car_id, act_ok, forwarder):
         with self.connection:

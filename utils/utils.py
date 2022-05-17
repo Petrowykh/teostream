@@ -1,5 +1,7 @@
 import pandas as pd
 
+#SELECT * from trips where data_route=(select max(data_route) from trips WHERE direction<>'Минск') and direction<>'Минск'
+
 data = {
     'name': ['Петровых', 'Корнейчик', 'Лепехо', 'Талах'],
     ' 1' : [1,1,1,8],
