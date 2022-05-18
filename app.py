@@ -20,6 +20,7 @@ path = "config.ini"
 
 PATH_DB = config_ini.get_setting(path, 'db_local', 'PATH_DB')
 NAME_DB = config_ini.get_setting(path, 'db_local', 'NAME_DB')
+
 try:
     tsdb = Teo_DB(PATH_DB+NAME_DB)
     print ('Connection - Ok')
@@ -37,30 +38,37 @@ def timesheets_create():
 
 ######### Acts ##########
 def acts_create():
+    summa = 0
     st.subheader('Акты наемных водителей')
-    placeholder = st.empty()
-    time.sleep(5)
-    # Replace the placeholder with some text:
-    placeholder.text("Hello")
-    time.sleep(5)
-    # Replace the text with a chart:
-    placeholder.line_chart({"data": [1, 5, 2, 6]})
-    time.sleep(5)
-    # Replace the chart with several elements:
-    with placeholder.container():
-        st.write("This is one element")
-        st.write("This is another")
-    time.sleep(5)
-    # Clear all those elements:
-    placeholder.empty()
+    
+    act_organization = st.sidebar.selectbox('Организация', tsdb.get_list_organization())
+    act_driver = st.sidebar.selectbox('Водитель', tsdb.get_list_driver(act_organization))
+    act_date = st.sidebar.selectbox('Выберите дату', tsdb.get_list_date(act_driver))
+    act_table = st.empty()
+    df_acttable = tsdb.get_act_of_DD(act_date, act_driver)
+    act_table.table(df_acttable)
+    
+    act_idcar = tsdb.get_id_car(df_acttable['Машина'][0])
+    params = list(tsdb.get_param(act_idcar))
+    if df_acttable['Направление'][0] == 'Минск':
+        act_hour = st.sidebar.slider('Количетсво часов', 4, 12, 8, 1)
+        summa = int(act_hour) * float(params[1])
+    else:
+        #st.sidebar.checkbox('Закрыть часами')
+        #print(tsdb.get_param(act_idcar))
+        if st.sidebar.checkbox('Закрыть часами', False):
+            act_hour = st.sidebar.slider('Количетсво часов', 4, 12, 8, 1)
+            summa = int(act_hour) * float(params[1])
+        else:
+            act_km = st.sidebar.text_input('Километраж', value=0)
+            print(int(act_km), list(tsdb.get_param(act_idcar))[0])
+            summa = int(act_km) * float(params[0])
+    st.sidebar.text(f'Сумма {summa}')
+    if st.sidebar.button('Сохранить'):
+        st.text('Save')
 
 ######### Trips ############
 def trips_create():
-
-    
-    route_flag = False
-    route_flag_Minsk = False
-    
     st.subheader('Рейсы')
     trip_date = st.sidebar.date_input('Дата рейса', datetime.now()+timedelta(days=1))
 
@@ -88,10 +96,7 @@ def trips_create():
     
     if st.sidebar.button('Добавить'):
         tsdb.add_trips(trip_route, trip_date, tsdb.get_id_emplyee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
-        if trip_town == 'Минск':
-            route_flag_Minsk = True
-        else:
-            route_flag = True
+        
     st.text(f'Командировки на : {trip_date}')
     table_trips = st.empty()
     table_trips.table(tsdb.get_trips_of_date(trip_date, False))
