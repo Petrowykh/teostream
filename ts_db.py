@@ -53,8 +53,9 @@ class Teo_DB:
         key_word = '=' if flag_trip else '<>'
         with self.connection:
             trips = self.cursor.execute(f"SELECT trips.direction, employees.fullname, cars.car_number, trips.ready FROM trips, employees, cars WHERE employees.fullname = (SELECT fullname FROM employees WHERE employees.id = trips.driver) AND cars.car_number = (SELECT car_number FROM cars WHERE cars.id = trips.car_id) AND trips.date_route = '{date}' AND trips.direction {key_word} 'Минск'").fetchall() 
-        df = pd.DataFrame(trips, columns=['Направление', 'Водитель', 'Машина', 'sms'])
-        
+        df = pd.DataFrame(trips, columns=['Направление', 'Водитель', 'Машина', 'send'])
+        df['sms'] = df['send'].apply(lambda x: '\u2714' if x else '\u274C')
+        df = df.drop(columns=['send'], axis=1)
         if trips != None:
             return df
             #TODO add correct input sms value
@@ -75,7 +76,6 @@ class Teo_DB:
     def get_list_organization(self):
         list_org = []
         with self.connection:
-            
             for i in self.cursor.execute("SELECT DISTINCT organization FROM employees WHERE employees.id in (SELECT DISTINCT driver from trips where trips.act_ok=1 and trips.id not in (SELECT acts.id_trip from acts))").fetchall():
                 list_org.append(str(i).split("'")[1])
         return list_org
@@ -83,7 +83,6 @@ class Teo_DB:
     def get_list_driver(self, organization):
         list_driver = []
         with self.connection:
-            #TODO delete fullname
             for i in self.cursor.execute(f"SELECT DISTINCT fullname FROM employees WHERE fullname in (SELECT fullname from employees WHERE organization = '{organization}') AND employees.id in (SELECT DISTINCT driver from trips where trips.act_ok=1 and trips.id not in (SELECT acts.id_trip from acts))").fetchall():
                 list_driver.append(str(i).split("'")[1])
         return set(list_driver)
@@ -107,7 +106,11 @@ class Teo_DB:
         with self.connection:
             return self.cursor.execute(f"SELECT price_km, price_hour FROM cars WHERE id = '{number}'").fetchone()
 
-    def add_acts(self, route, date_route, driver, days, direction, car_id, act_ok, forwarder):
+    def get_id_trip(self, date, car_id):
         with self.connection:
-            return self.cursor.execute("INSERT INTO trips (route, date_route, driver, days, direction, car_id, act_ok, forwarder) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
-            (route, date_route, driver, days, direction, car_id, act_ok, forwarder))
+            return self.cursor.execute(f"SELECT id FROM trips WHERE car_id = '{car_id}' AND date_route = '{date}'").fetchone()[0]
+
+    def add_acts(self, id_trip, price, unit, summa):
+        with self.connection:
+            return self.cursor.execute("INSERT INTO acts (id_trip, price, unit, summa) VALUES (?, ?, ?, ?)", 
+            (int(id_trip), price, int(unit), summa))

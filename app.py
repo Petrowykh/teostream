@@ -53,18 +53,26 @@ def acts_create():
     if df_acttable['Направление'][0] == 'Минск':
         act_hour = st.sidebar.slider('Количетсво часов', 4, 12, 8, 1)
         summa = int(act_hour) * float(params[1])
+        
     else:
-        #st.sidebar.checkbox('Закрыть часами')
-        #print(tsdb.get_param(act_idcar))
         if st.sidebar.checkbox('Закрыть часами', False):
+        #print(tsdb.get_param(act_idcar))
             act_hour = st.sidebar.slider('Количетсво часов', 4, 12, 8, 1)
             summa = int(act_hour) * float(params[1])
         else:
-            act_km = st.sidebar.text_input('Километраж', value=0)
+            act_km = st.sidebar.number_input('Километраж',format='%d')
             print(int(act_km), list(tsdb.get_param(act_idcar))[0])
             summa = int(act_km) * float(params[0])
+    if df_acttable['Направление'][0] == 'Минск' and act_hour != 0:
+        price = float(params[1])
+        unit = act_hour
+    else:
+        price = float(params[0])
+        unit = act_km
     st.sidebar.text(f'Сумма {summa}')
     if st.sidebar.button('Сохранить'):
+        tsdb.add_acts(tsdb.get_id_trip(act_date, act_idcar), price, unit, summa)
+        act_table.empty()
         st.text('Save')
 
 ######### Trips ############
