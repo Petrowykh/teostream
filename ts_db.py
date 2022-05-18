@@ -45,9 +45,26 @@ class Teo_DB:
 
     def get_last_route(self):
         with self.connection:
-            return self.cursor.execute("SELECT route FROM trips WHERE NOT act_ok ORDER BY route DESC").fetchone()[0]
+            return self.cursor.execute("SELECT max(route) FROM trips WHERE NOT act_ok").fetchone()[0]
 
-    def add_trips(self, route, data_route, driver, days, direction, car_id, act_ok, forwarder):
+    def add_trips(self, route, date_route, driver, days, direction, car_id, act_ok, forwarder):
         with self.connection:
-            return self.cursor.execute("INSERT INTO trips (route, data_route, driver, days, direction, car_id, act_ok, forwarder) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
-            (route, data_route, driver, days, direction, car_id, act_ok, forwarder))
+            return self.cursor.execute("INSERT INTO trips (route, date_route, driver, days, direction, car_id, act_ok, forwarder) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
+            (route, date_route, driver, days, direction, car_id, act_ok, forwarder))
+
+    def get_trips_of_date(self, date, flag_trip):
+        key_word = '=' if flag_trip else '<>'
+        with self.connection:
+            trips = self.cursor.execute(f"SELECT trips.direction, employees.fullname, cars.car_number     FROM trips, employees, cars WHERE employees.fullname = (SELECT fullname FROM employees WHERE employees.id = trips.driver) AND cars.car_number = (SELECT car_number FROM cars WHERE cars.id = trips.car_id) AND trips.date_route = '{date}' AND trips.direction {key_word} 'Минск'").fetchall() 
+        if trips != None:
+            return trips
+        else:
+            return 'Рейсов не запланировано'
+
+    def get_status_message(self, date, flag_trip):
+        key_word = '=' if flag_trip else '<>'
+        with self.connection:
+            status = self.cursor.execute(f"SELECT min(trips.ready) FROM trips WHERE trips.date_route = '{date}' AND trips.direction {key_word} 'Минск'").fetchone()[0]
+        if status == None:
+            status = True
+        return status

@@ -56,9 +56,13 @@ def acts_create():
 
 ######### Trips ############
 def trips_create():
+
     
-    st.subheader('Командировки')
-    trip_data = st.sidebar.date_input('Дата командирвоки', datetime.now()+timedelta(days=1))
+    route_flag = False
+    route_flag_Minsk = False
+    
+    st.subheader('Рейсы')
+    trip_date = st.sidebar.date_input('Дата рейса', datetime.now()+timedelta(days=1))
 
     trip_check_town = st.sidebar.checkbox('Командировка')
     trip_town = 'Минск'
@@ -76,16 +80,30 @@ def trips_create():
     trip_car = st.sidebar.selectbox('Выберите машину', tsdb.get_number_car(trip_check_our, trip_driver)[0], index=tsdb.get_number_car(trip_check_our, trip_driver)[1])
     trip_route = 0
     trip_forwarder = 0
-    trip_route = st.sidebar.number_input('Номер путевого', format="%d", value=int(tsdb.get_last_route()+1), disabled=trip_check_our)
+    trip_route = st.sidebar.number_input('Номер путевого', format="%d", value=int(tsdb.get_last_route())+1, disabled=trip_check_our)
     trip_check_forwarder = st.sidebar.checkbox('Экспедитор', disabled=trip_check_our)
     if trip_check_forwarder:
         trip_forwarder = st.sidebar.selectbox('Выберите экспедитора', tsdb.get_name(trip_check_our, 'экспедитор'))
         trip_forwarder = tsdb.get_id_emplyee(trip_forwarder)
     
     if st.sidebar.button('Добавить'):
-        tsdb.add_trips(trip_route, trip_data, tsdb.get_id_emplyee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
+        tsdb.add_trips(trip_route, trip_date, tsdb.get_id_emplyee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
+        if trip_town == 'Минск':
+            route_flag_Minsk = True
+        else:
+            route_flag = True
+    st.text(f'Командировки на : {trip_date}')
+    table_trips = st.empty()
+    table_trips.table(tsdb.get_trips_of_date(trip_date, False))
 
-    if st.button('Уведомение'):
+    if st.button('Уведомение', disabled=tsdb.get_status_message(trip_date, False)):
+        st.text('Send')
+
+    st.text(f'Минск на : {trip_date}')
+    table_trips = st.empty()
+    table_trips.table(tsdb.get_trips_of_date(trip_date, True))
+    
+    if st.button('Уведомение по Минску', disabled=tsdb.get_status_message(trip_date, True)):
         st.text('Send')
 
 st.set_page_config(
