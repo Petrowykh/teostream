@@ -1,4 +1,5 @@
 import sqlite3
+import pandas as pd
 
 
 class Teo_DB:
@@ -55,9 +56,12 @@ class Teo_DB:
     def get_trips_of_date(self, date, flag_trip):
         key_word = '=' if flag_trip else '<>'
         with self.connection:
-            trips = self.cursor.execute(f"SELECT trips.direction, employees.fullname, cars.car_number     FROM trips, employees, cars WHERE employees.fullname = (SELECT fullname FROM employees WHERE employees.id = trips.driver) AND cars.car_number = (SELECT car_number FROM cars WHERE cars.id = trips.car_id) AND trips.date_route = '{date}' AND trips.direction {key_word} 'Минск'").fetchall() 
+            trips = self.cursor.execute(f"SELECT trips.direction, employees.fullname, cars.car_number, trips.ready FROM trips, employees, cars WHERE employees.fullname = (SELECT fullname FROM employees WHERE employees.id = trips.driver) AND cars.car_number = (SELECT car_number FROM cars WHERE cars.id = trips.car_id) AND trips.date_route = '{date}' AND trips.direction {key_word} 'Минск'").fetchall() 
+        df = pd.DataFrame(trips, columns=['Направление', 'Водитель', 'Машина', 'sms'])
+        
         if trips != None:
-            return trips
+            return df
+            #TODO add correct input sms value
         else:
             return 'Рейсов не запланировано'
 
@@ -67,4 +71,5 @@ class Teo_DB:
             status = self.cursor.execute(f"SELECT min(trips.ready) FROM trips WHERE trips.date_route = '{date}' AND trips.direction {key_word} 'Минск'").fetchone()[0]
         if status == None:
             status = True
+        print (status)
         return status
