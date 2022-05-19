@@ -48,6 +48,8 @@ class Teo_DB:
 #(SELECT employees.fullname FROM employees WHERE employees."position" ='водитель' AND employees.our=FALSE) NOT in
 #(SELECT fullname FROM employees e WHERE id in (SELECT t.driver FROM trips t WHERE t.date_route='2022-05-16'))
 
+# Имя: Deepdark Material Theme
+
 
     def get_number_car_clear(self, id):
         with self.connection:
