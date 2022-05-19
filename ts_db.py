@@ -13,6 +13,10 @@ class Teo_DB:
 
 
     ############## def for trips pages ###############
+    def get_firstname(self, id):
+        with self.connection:
+            return self.cursor.execute(f"SELECT fullname FROM employees WHERE id='{id}'").fetchone()[0].split(' ')[0]
+    
     def get_id_emplyee(self, name):
         with self.connection:
             return self.cursor.execute(f"SELECT id FROM employees WHERE fullname='{name}'").fetchone()[0]
@@ -27,7 +31,11 @@ class Teo_DB:
             for i in self.cursor.execute(f"SELECT fullname FROM employees WHERE position='{position}' AND our={not(our)}").fetchall():
                 l.append(str(i).split("'")[1])
             return l
-    
+
+    def get_number_car_clear(self, id):
+        with self.connection:
+            return self.cursor.execute(f"SELECT car_number FROM cars WHERE id={id}").fetchone()[0]
+
     def get_number_car(self, our, name):
         l = []
         with self.connection:
@@ -58,7 +66,7 @@ class Teo_DB:
         df = df.drop(columns=['send'], axis=1)
         if trips != None:
             return df
-            #TODO add correct input sms value
+            
         else:
             return 'Рейсов не запланировано'
 
@@ -70,6 +78,22 @@ class Teo_DB:
             status = True
         print (status)
         return status
+
+    def get_info_sms(self, date, flag_trip):
+        key_word = '=' if flag_trip else '<>'
+        info = []
+        with self.connection:
+            for i in self.cursor.execute(f"SELECT driver, date_route, direction, days, car_id, forwarder, id FROM trips WHERE date_route = '{date}' AND trips.direction {key_word} 'Минск' AND not ready").fetchall():
+                info.append(list(i))
+        return info
+    
+    def get_phone(self, id):
+        with self.connection:
+            return self.cursor.execute(f"SELECT phone FROM employees WHERE id = {id}").fetchone()[0]
+
+    def update_status_ready(self, id):
+        with self.connection:
+            self.cursor.execute(f"UPDATE trips SET ready=True WHERE id={id}")
 
     ############ def for acts pages ############
 
@@ -91,7 +115,7 @@ class Teo_DB:
         l = []
         id = self.get_id_emplyee(name)
         with self.connection:
-            for i in self.cursor.execute(f"SELECT trips.date_route FROM trips, acts where trips.driver = {int(id)} and trips.id not in (SELECT acts.id_trip from acts)").fetchall():
+            for i in self.cursor.execute(f"SELECT trips.date_route FROM trips where trips.driver ={int(id)} and trips.id not in (SELECT acts.id_trip from acts)").fetchall():
                 l.append(str(i).split("'")[1])
             return l
     

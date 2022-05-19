@@ -44,10 +44,11 @@ def acts_create():
     act_organization = st.sidebar.selectbox('Организация', tsdb.get_list_organization())
     act_driver = st.sidebar.selectbox('Водитель', tsdb.get_list_driver(act_organization))
     act_date = st.sidebar.selectbox('Выберите дату', tsdb.get_list_date(act_driver))
+    print(tsdb.get_list_driver(act_organization), tsdb.get_list_date(act_driver))
     act_table = st.empty()
     df_acttable = tsdb.get_act_of_DD(act_date, act_driver)
     act_table.table(df_acttable)
-    
+    print (df_acttable)
     act_idcar = tsdb.get_id_car(df_acttable['Машина'][0])
     params = list(tsdb.get_param(act_idcar))
     if df_acttable['Направление'][0] == 'Минск':
@@ -60,7 +61,7 @@ def acts_create():
             act_hour = st.sidebar.slider('Количетсво часов', 4, 12, 8, 1)
             summa = int(act_hour) * float(params[1])
         else:
-            act_km = st.sidebar.number_input('Километраж',format='%d')
+            act_km = st.sidebar.number_input('Километраж')
             print(int(act_km), list(tsdb.get_param(act_idcar))[0])
             summa = int(act_km) * float(params[0])
     if df_acttable['Направление'][0] == 'Минск' and act_hour != 0:
@@ -73,7 +74,7 @@ def acts_create():
     if st.sidebar.button('Сохранить'):
         tsdb.add_acts(tsdb.get_id_trip(act_date, act_idcar), price, unit, summa)
         act_table.empty()
-        st.text('Save')
+        st.info('Акт сохранен')
 
 ######### Trips ############
 def trips_create():
@@ -90,34 +91,81 @@ def trips_create():
     else:
         trip_town = 'Минск'
         trip_days = 1
-    trip_check_our = st.sidebar.checkbox('Наемный')
-    
+    trip_check_our = st.sidebar.checkbox('Наемный', value=True)
     trip_driver = st.sidebar.selectbox('Выберите водителя', tsdb.get_name(trip_check_our, 'водитель'))
     trip_car = st.sidebar.selectbox('Выберите машину', tsdb.get_number_car(trip_check_our, trip_driver)[0], index=tsdb.get_number_car(trip_check_our, trip_driver)[1])
     trip_route = 0
     trip_forwarder = 0
-    trip_route = st.sidebar.number_input('Номер путевого', format="%d", value=int(tsdb.get_last_route())+1, disabled=trip_check_our)
+    if not(trip_check_our):
+        trip_route = st.sidebar.number_input('Номер путевого', format="%d", value=int(tsdb.get_last_route())+1, disabled=trip_check_our)
     trip_check_forwarder = st.sidebar.checkbox('Экспедитор', disabled=trip_check_our)
     if trip_check_forwarder:
-        trip_forwarder = st.sidebar.selectbox('Выберите экспедитора', tsdb.get_name(trip_check_our, 'экспедитор'))
-        trip_forwarder = tsdb.get_id_emplyee(trip_forwarder)
+        
+        trip_forwarder_name = st.sidebar.selectbox('Выберите экспедитора', tsdb.get_name(trip_check_our, 'экспедитор'))
+        trip_forwarder = tsdb.get_id_emplyee(trip_forwarder_name)
     
     if st.sidebar.button('Добавить'):
         tsdb.add_trips(trip_route, trip_date, tsdb.get_id_emplyee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
+        st.info('Рейс добавлен')
         
     st.text(f'Командировки на : {trip_date}')
     table_trips = st.empty()
     table_trips.table(tsdb.get_trips_of_date(trip_date, False))
 
     if st.button('Уведомение', disabled=tsdb.get_status_message(trip_date, False)):
-        st.text('Send')
-
+        table_trips.info('Sending...')
+        progress_send = table_trips.progress(0)
+        percent_complite = 0
+        len_complite = len(tsdb.get_info_sms(trip_date, False))
+        for sm in tsdb.get_info_sms(trip_date, False):
+            percent_complite = percent_complite+int(100/len_complite)
+            progress_send.progress(percent_complite)
+            
+            if sm[5]:
+                sms_driver = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_firstname(sm[5])}'
+                phone_driver = tsdb.get_phone(sm[0])
+                #send sms
+                print(f'Driver Number {phone_driver} text {sms_driver}')
+                sms_forwarder = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_firstname(sm[0])}'
+                phone_forwarder = tsdb.get_phone(sm[5])
+                print(f'Forwarder Number {phone_forwarder} text {sms_forwarder}')
+            else:
+                sms_driver = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} без экспедитора'
+                phone_driver = tsdb.get_phone(sm[0])
+                #send sms
+                print(f'Driver Number {phone_driver} text {sms_driver}')
+            tsdb.update_status_ready(sm[6])
+        table_trips.table(tsdb.get_trips_of_date(trip_date, False))
+            
+        
     st.text(f'Минск на : {trip_date}')
     table_trips = st.empty()
     table_trips.table(tsdb.get_trips_of_date(trip_date, True))
     
     if st.button('Уведомение по Минску', disabled=tsdb.get_status_message(trip_date, True)):
-        st.text('Send')
+        table_trips.info('Sending...')
+        progress_send = table_trips.progress(0)
+        percent_complite = 0
+        len_complite = len(tsdb.get_info_sms(trip_date, True))
+        for sm in tsdb.get_info_sms(trip_date, True):
+            percent_complite = percent_complite+int(100/len_complite)
+            progress_send.progress(percent_complite)
+            
+            if sm[5]:
+                sms_driver = f'{sm[1]} {sm[2]} Минск {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_firstname(sm[5])}'
+                phone_driver = tsdb.get_phone(sm[0])
+                #send sms
+                print(f'Driver Number {phone_driver} text {sms_driver}')
+                sms_forwarder = f'{sm[1]} {sm[2]} Минск {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_firstname(sm[0])}'
+                phone_forwarder = tsdb.get_phone(sm[5])
+                print(f'Forwarder Number {phone_forwarder} text {sms_forwarder}')
+            else:
+                sms_driver = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} без экспедитора'
+                phone_driver = tsdb.get_phone(sm[0])
+                #send sms
+                print(f'Driver Number {phone_driver} text {sms_driver}')
+            tsdb.update_status_ready(sm[6])
+        table_trips.table(tsdb.get_trips_of_date(trip_date, True))
 
 st.set_page_config(
     page_title='Информационная система',

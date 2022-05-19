@@ -1,4 +1,6 @@
 import pandas as pd
+import requests
+
 
 #SELECT * from trips where data_route=(select max(data_route) from trips WHERE direction<>'Минск') and direction<>'Минск'
 
@@ -34,6 +36,20 @@ data = {
     '29' : [0,0,0,0],
     '30' : [0,0,0,0],
 }
+
+
+SMS_USER = 'Belbogemia'
+SMS_PASSWORD = '98k47478'
+SMS_URL = 'https://userarea.sms-assistent.by/api/v1/send_sms/plain'
+
+
+def sms_send(text, phone='+375(29)6908632'):
+    param = {'user': SMS_USER, 'password': SMS_PASSWORD, 'recipient': phone, 'message': text, 'sender': 'belbohemia'}
+    try:
+        answer = requests.get(SMS_URL, params=param)
+    except Exception as e:
+        return e
+    return answer
 
 def draw_table():
     def define_color(num):
