@@ -25,12 +25,29 @@ class Teo_DB:
         with self.connection:
             return self.cursor.execute(f"SELECT id FROM cars WHERE car_number='{number}'").fetchone()[0]
 
-    def get_name(self, our, position):
+    def get_name(self, our, position, date):
         l = []
+        l1 = []
+        itog = []
         with self.connection:
-            for i in self.cursor.execute(f"SELECT fullname FROM employees WHERE position='{position}' AND our={not(our)}").fetchall():
+            for i in self.cursor.execute(f"SELECT employees.fullname FROM employees, trips WHERE employees.position='{position}' AND employees.our={not(our)}").fetchall():
                 l.append(str(i).split("'")[1])
-            return l
+            for i in self.cursor.execute(f"SELECT fullname FROM employees e WHERE id in (SELECT t.driver FROM trips t WHERE t.date_route='{date}')").fetchall():
+                l1.append(str(i).split("'")[1])
+            
+            if l1 != None:
+                for i in l:
+                    if i not in l1:
+                        itog.append(i) 
+                return itog
+            else:
+                return l
+
+
+# SELECT fullname FROM employees WHERE 
+#(SELECT employees.fullname FROM employees WHERE employees."position" ='водитель' AND employees.our=FALSE) NOT in
+#(SELECT fullname FROM employees e WHERE id in (SELECT t.driver FROM trips t WHERE t.date_route='2022-05-16'))
+
 
     def get_number_car_clear(self, id):
         with self.connection:

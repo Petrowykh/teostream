@@ -92,7 +92,7 @@ def trips_create():
         trip_town = 'Минск'
         trip_days = 1
     trip_check_our = st.sidebar.checkbox('Наемный', value=True)
-    trip_driver = st.sidebar.selectbox('Выберите водителя', tsdb.get_name(trip_check_our, 'водитель'))
+    trip_driver = st.sidebar.selectbox('Выберите водителя', tsdb.get_name(trip_check_our, 'водитель', trip_date))
     trip_car = st.sidebar.selectbox('Выберите машину', tsdb.get_number_car(trip_check_our, trip_driver)[0], index=tsdb.get_number_car(trip_check_our, trip_driver)[1])
     trip_route = 0
     trip_forwarder = 0
