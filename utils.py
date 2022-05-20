@@ -1,8 +1,9 @@
 import pandas as pd
-import requests
+import requests,smtplib
+import config_ini
+from email.mime.text import MIMEText
+from email.header import Header
 
-
-#SELECT * from trips where data_route=(select max(data_route) from trips WHERE direction<>'Минск') and direction<>'Минск'
 
 data = {
     'name': ['Петровых', 'Корнейчик', 'Лепехо', 'Талах'],
@@ -37,10 +38,21 @@ data = {
     '30' : [0,0,0,0],
 }
 
+path = "config.ini"
+    # font = get_setting(path, 'Settings', 'font')
+    # font_size = get_setting(path, 'Settings', 'font_size')
+    
+    # update_setting(path, "Settings", "font_size", "12")
+    # delete_setting(path, "Settings", "font_style")
 
-SMS_USER = 'Belbogemia'
-SMS_PASSWORD = '98k47478'
-SMS_URL = 'https://userarea.sms-assistent.by/api/v1/send_sms/plain'
+SMS_USER = config_ini.get_setting(path, 'sms', 'SMS_USER')
+SMS_PASSWORD = config_ini.get_setting(path, 'sms', 'SMS_PASSWORD')
+SMS_URL = config_ini.get_setting(path, 'sms', 'SMS_URL')
+
+MAIL_SERVER = config_ini.get_setting(path, 'mailserver', 'MAIL_SERVER')
+MAIL_PORT = config_ini.get_setting(path, 'mailserver', 'MAIL_PORT')
+MAIL_USERNAME = config_ini.get_setting(path, 'mailserver', 'MAIL_USERNAME')
+MAIL_PASSWORD = config_ini.get_setting(path, 'mailserver', 'MAIL_PASSWORD')
 
 
 def sms_send(text, phone='+375(29)6908632'):
@@ -51,6 +63,32 @@ def sms_send(text, phone='+375(29)6908632'):
         return e
     return answer
 
+def send_letter(subject, htmlBody, recipient='a.petrovyh@belbohemia.by'):
+    sender = MAIL_USERNAME
+    receivers = recipient  
+    mail_msg = htmlBody
+    message = MIMEText(mail_msg, 'html', 'utf-8')
+    message['From'] = Header("\u2139 Информационная рассылка", 'utf-8')
+        
+    message['Subject'] = Header(subject, 'utf-8')
+    
+    try:
+        smtpObj = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
+    except Exception as e:
+        print(e)
+        smtpObj = smtplib.SMTP_SSL('smtp.belbohemia.by', 465)
+
+    smtpObj.ehlo()
+    smtpObj.starttls()
+    smtpObj.login(MAIL_USERNAME, MAIL_PASSWORD)
+    
+    try:
+        smtpObj.sendmail(sender, receivers, message.as_string())
+        print ("Почта успешно отправлена")
+    except smtplib.SMTPException as e:
+        print ("Ошибка: невозможно отправить почту", e)
+    smtpObj.quit()
+    
 def draw_table():
     def define_color(num):
         if not str(num).isdigit():

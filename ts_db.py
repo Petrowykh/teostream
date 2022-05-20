@@ -1,3 +1,4 @@
+from datetime import timedelta
 import sqlite3
 import pandas as pd
 
@@ -17,6 +18,10 @@ class Teo_DB:
         with self.connection:
             return self.cursor.execute(f"SELECT fullname FROM employees WHERE id='{id}'").fetchone()[0].split(' ')[0]
     
+    def get_name_by_id(self, id):
+        with self.connection:
+            return self.cursor.execute(f"SELECT fullname FROM employees WHERE id='{id}'").fetchone()[0]
+
     def get_id_emplyee(self, name):
         with self.connection:
             return self.cursor.execute(f"SELECT id FROM employees WHERE fullname='{name}'").fetchone()[0]
@@ -27,30 +32,12 @@ class Teo_DB:
 
     def get_name(self, our, position, date):
         l = []
-        l1 = []
-        itog = []
         with self.connection:
-            for i in self.cursor.execute(f"SELECT employees.fullname FROM employees, trips WHERE employees.position='{position}' AND employees.our={not(our)}").fetchall():
+            for i in self.cursor.execute(f"SELECT fullname FROM employees WHERE employees.position='{position}' AND employees.our={not(our)} EXCEPT SELECT fullname FROM employees e WHERE id in (SELECT t.driver FROM trips t WHERE t.date_route='{date}' OR (t.date_route='{date-timedelta(days=1)}' AND days = 2))").fetchall():
                 l.append(str(i).split("'")[1])
-            for i in self.cursor.execute(f"SELECT fullname FROM employees e WHERE id in (SELECT t.driver FROM trips t WHERE t.date_route='{date}')").fetchall():
-                l1.append(str(i).split("'")[1])
+        print(l)
+        return l
             
-            if l1 != None:
-                for i in l:
-                    if i not in l1:
-                        itog.append(i) 
-                return itog
-            else:
-                return l
-
-
-# SELECT fullname FROM employees WHERE 
-#(SELECT employees.fullname FROM employees WHERE employees."position" ='водитель' AND employees.our=FALSE) NOT in
-#(SELECT fullname FROM employees e WHERE id in (SELECT t.driver FROM trips t WHERE t.date_route='2022-05-16'))
-
-# Имя: Deepdark Material Theme
-
-
     def get_number_car_clear(self, id):
         with self.connection:
             return self.cursor.execute(f"SELECT car_number FROM cars WHERE id={id}").fetchone()[0]
@@ -79,13 +66,12 @@ class Teo_DB:
     def get_trips_of_date(self, date, flag_trip):
         key_word = '=' if flag_trip else '<>'
         with self.connection:
-            trips = self.cursor.execute(f"SELECT trips.direction, employees.fullname, cars.car_number, trips.ready FROM trips, employees, cars WHERE employees.fullname = (SELECT fullname FROM employees WHERE employees.id = trips.driver) AND cars.car_number = (SELECT car_number FROM cars WHERE cars.id = trips.car_id) AND trips.date_route = '{date}' AND trips.direction {key_word} 'Минск'").fetchall() 
-        df = pd.DataFrame(trips, columns=['Направление', 'Водитель', 'Машина', 'send'])
-        df['sms'] = df['send'].apply(lambda x: '\u2714' if x else '\u274C')
-        df = df.drop(columns=['send'], axis=1)
+            trips = self.cursor.execute(f"SELECT trips.route, trips.direction, employees.fullname, cars.car_number, trips.ready FROM trips, employees, cars WHERE employees.fullname = (SELECT fullname FROM employees WHERE employees.id = trips.driver) AND cars.car_number = (SELECT car_number FROM cars WHERE cars.id = trips.car_id) AND trips.date_route = '{date}' AND trips.direction {key_word} 'Минск'").fetchall() 
+        df = pd.DataFrame(trips, columns=['Путевой', 'Направление', 'Водитель', 'Машина', 'sms'])
+        df['sms'] = df['sms'].apply(lambda x: '\u2714' if x else '\u274C')
+        
         if trips != None:
             return df
-            
         else:
             return 'Рейсов не запланировано'
 
@@ -102,7 +88,7 @@ class Teo_DB:
         key_word = '=' if flag_trip else '<>'
         info = []
         with self.connection:
-            for i in self.cursor.execute(f"SELECT driver, date_route, direction, days, car_id, forwarder, id FROM trips WHERE date_route = '{date}' AND trips.direction {key_word} 'Минск' AND not ready").fetchall():
+            for i in self.cursor.execute(f"SELECT driver, date_route, direction, days, car_id, forwarder, id, route FROM trips WHERE date_route = '{date}' AND trips.direction {key_word} 'Минск' AND not ready").fetchall():
                 info.append(list(i))
         return info
     
