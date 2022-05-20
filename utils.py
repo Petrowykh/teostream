@@ -75,7 +75,6 @@ def send_letter(subject, htmlBody, recipient='a.petrovyh@belbohemia.by'):
     try:
         smtpObj = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
     except Exception as e:
-        print(e)
         smtpObj = smtplib.SMTP_SSL('smtp.belbohemia.by', 465)
 
     smtpObj.ehlo()
@@ -84,9 +83,9 @@ def send_letter(subject, htmlBody, recipient='a.petrovyh@belbohemia.by'):
     
     try:
         smtpObj.sendmail(sender, receivers, message.as_string())
-        print ("Почта успешно отправлена")
+        
     except smtplib.SMTPException as e:
-        print ("Ошибка: невозможно отправить почту", e)
+        return e
     smtpObj.quit()
     
 def draw_table():

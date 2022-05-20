@@ -1,4 +1,4 @@
-import time
+import logging
 import streamlit as st
 import pandas as pd
 
@@ -21,12 +21,13 @@ path = "config.ini"
 PATH_DB = config_ini.get_setting(path, 'db_local', 'PATH_DB')
 NAME_DB = config_ini.get_setting(path, 'db_local', 'NAME_DB')
 TOWN50 = ['Брест', 'Витебск', 'Могилев', 'Гомель', 'Гродно']
+logger = logging.basicConfig(filename='ts_log.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+
 
 try:
     tsdb = Teo_DB(PATH_DB+NAME_DB)
-    print ('Connection - Ok')
 except Exception as e:
-    print (f'Error {e}')
+    logger.warning(f'No connect DB {e}')
 
 
 ######### TimeSheets #########
@@ -58,7 +59,6 @@ def acts_create():
             summa = int(act_hour) * float(params[1])
         else:
             act_km = st.sidebar.number_input('Километраж')
-            print(int(act_km), list(tsdb.get_param(act_idcar))[0])
             summa = int(act_km) * float(params[0])
     if df_acttable['Направление'][0] == 'Минск' and act_hour != 0:
         price = float(params[1])
@@ -116,8 +116,7 @@ def trips_create():
     html_letter = html_letter + 'Добрый день<BR>' + '<OL>'
     html_money = '<font size="3" face="Tahoma">'
     html_money = html_money + 'Добрый день!<BR>'
-    if st.button('Уведомение', disabled=tsdb.get_status_message(trip_date, False)):
-        table_trips.info('Sending...')
+    if st.button('Уведомление', disabled=tsdb.get_status_message(trip_date, False)):
         progress_send = table_trips.progress(0)
         percent_complite = 0
         len_complite = len(tsdb.get_info_sms(trip_date, False))
@@ -165,7 +164,6 @@ def trips_create():
     html_letter = '<font size="3" face="Tahoma">'
     html_letter = html_letter + 'Добрый день<BR>' + '<OL>'
     if st.button('Уведомение по Минску', disabled=tsdb.get_status_message(trip_date, True)):
-        table_trips.info('Sending...')
         progress_send = table_trips.progress(0)
         percent_complite = 0
         len_complite = len(tsdb.get_info_sms(trip_date, True))

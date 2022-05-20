@@ -35,7 +35,7 @@ class Teo_DB:
         with self.connection:
             for i in self.cursor.execute(f"SELECT fullname FROM employees WHERE employees.position='{position}' AND employees.our={not(our)} EXCEPT SELECT fullname FROM employees e WHERE id in (SELECT t.driver FROM trips t WHERE t.date_route='{date}' OR (t.date_route='{date-timedelta(days=1)}' AND days = 2))").fetchall():
                 l.append(str(i).split("'")[1])
-        print(l)
+        
         return l
             
     def get_number_car_clear(self, id):
@@ -81,7 +81,7 @@ class Teo_DB:
             status = self.cursor.execute(f"SELECT min(trips.ready) FROM trips WHERE trips.date_route = '{date}' AND trips.direction {key_word} 'Минск'").fetchone()[0]
         if status == None:
             status = True
-        print (status)
+        
         return status
 
     def get_info_sms(self, date, flag_trip):
