@@ -33,7 +33,7 @@ class Teo_DB:
     def get_name(self, our, position, date):
         l = []
         with self.connection:
-            for i in self.cursor.execute(f"SELECT fullname FROM employees WHERE employees.position='{position}' AND employees.our={not(our)} EXCEPT SELECT fullname FROM employees e WHERE id in (SELECT t.driver FROM trips t WHERE t.date_route='{date}' OR (t.date_route='{date-timedelta(days=1)}' AND days = 2))").fetchall():
+            for i in self.cursor.execute(f"SELECT fullname FROM employees WHERE employees.position='{position}' AND employees.our={not(our)} AND active EXCEPT SELECT fullname FROM employees e WHERE id in (SELECT t.driver FROM trips t WHERE t.date_route='{date}' OR (t.date_route='{date-timedelta(days=1)}' AND days = 2))").fetchall():
                 l.append(str(i).split("'")[1])
         
         return l

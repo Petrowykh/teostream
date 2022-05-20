@@ -51,16 +51,20 @@ def acts_create():
     act_idcar = tsdb.get_id_car(df_acttable['Машина'][0])
     params = list(tsdb.get_param(act_idcar)) # price for cars
     if df_acttable['Направление'][0] == 'Минск':
-        act_hour = st.sidebar.slider('Количетсво часов', 4, 12, 8, 1)
+        act_hour = st.sidebar.slider('Количество часов', 4, 12, 8, 1)
+        st.sidebar.metric('Цена за 1 час', float(params[1]), delta_color="inverse")
         summa = int(act_hour) * float(params[1])
     else:
         if st.sidebar.checkbox('Закрыть часами', False):
-            act_hour = st.sidebar.slider('Количетсво часов', 4, 12, 8, 1)
+            act_hour = st.sidebar.slider('Количество часов', 4, 12, 8, 1)
+            st.sidebar.metric('Цена за 1 час', float(params[1]), delta_color="inverse")
             summa = int(act_hour) * float(params[1])
         else:
             act_km = st.sidebar.number_input('Километраж')
+            act_hour = 0
+            st.sidebar.metric('Цена за 1 км', float(params[0]), delta_color="inverse")
             summa = int(act_km) * float(params[0])
-    if df_acttable['Направление'][0] == 'Минск' and act_hour != 0:
+    if df_acttable['Направление'][0] == 'Минск' or act_hour != 0:
         price = float(params[1])
         unit = act_hour
     else:
