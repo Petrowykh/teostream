@@ -214,6 +214,9 @@ def settings_create():
 
 ############## Data ###############
 
+def data_create():
+    pass
+
 st.set_page_config(
     page_title='Информационная система',
     page_icon="🧊",
@@ -238,7 +241,7 @@ elif selected == 'Акты':
     acts_create()
 elif selected == 'Настройки':
     settings_create()
-elif selected = 'Данные':
+elif selected == 'Данные':
     data_create()
 
 
