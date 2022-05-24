@@ -212,6 +212,8 @@ def settings_create():
         config_ini.update_setting(path, 'email', 'EMAIL_MONEY', list_money)
 
 
+############## Data ###############
+
 st.set_page_config(
     page_title='Информационная система',
     page_icon="🧊",
@@ -222,7 +224,7 @@ st.text(f'Сегодня {str(datetime.now())}')
 
 selected = option_menu(
     menu_title='Главное меню',
-    options=['Табель', 'Командировки', 'Акты', 'Настройки'],
+    options=['Табель', 'Командировки', 'Акты', 'Настройки', 'Данные'],
     icons=['calendar-range', 'alarm', 'card-checklist', 'tools'],
     orientation='horizontal',
     default_index=0,
@@ -236,6 +238,8 @@ elif selected == 'Акты':
     acts_create()
 elif selected == 'Настройки':
     settings_create()
+elif selected = 'Данные':
+    data_create()
 
 
 
