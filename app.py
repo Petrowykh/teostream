@@ -13,9 +13,9 @@ from ts_db import Teo_DB
 ######### Read Config.ini #########
 path = "config.ini"
 
-PATH_DB = config_ini.get_setting(path, 'db_local', 'PATH_DB')
-NAME_DB = config_ini.get_setting(path, 'db_local', 'NAME_DB')
-TOWN50 = ['Брест', 'Витебск', 'Могилев', 'Гомель', 'Гродно']
+PATH_DB = config_ini.get_setting(path, 'db_local', 'path_db')
+NAME_DB = config_ini.get_setting(path, 'db_local', 'name_db')
+TOWN50 = config_ini.get_setting(path, 'town', 'town50').split(',')
 logger = logging.basicConfig(filename='ts_log.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
 
@@ -197,6 +197,21 @@ def trips_create():
         table_trips.table(tsdb.get_trips_of_date(trip_date, True))
         utils.sms_send('Город готов')
 
+############# Settings #############
+def settings_create():
+    #col1, col2 = st.columns(2)
+    
+    email = st.selectbox('Выберите адрес электронной почты',('a.petrovyh@belbohemia.by', 'e.korneychik@belbohemia.by'), index=0)
+    email_password = st.text_input('Введите пароль', value=utils.MAIL_PASSWORD, type='password')
+    list_money = st.multiselect('Письмо о командирвоочных', ['e.korneychik@belbohemia.by', 'n.kostkova@belbohemia.by', 'd.pyzh@belbohemia.by'])
+    print (email_password)
+    list_money = " ".join(list_money)
+    if st.button('Сохранить'):
+        config_ini.update_setting(path, 'mailserver', 'MAIL_USERNAME', email)
+        config_ini.update_setting(path, 'mailserver', 'MAIL_PASSWORD', email_password)
+        config_ini.update_setting(path, 'email', 'EMAIL_MONEY', list_money)
+
+
 st.set_page_config(
     page_title='Информационная система',
     page_icon="🧊",
@@ -215,10 +230,13 @@ selected = option_menu(
 
 if selected == 'Табель':
     timesheets_create()
-if selected == 'Командировки':
+elif selected == 'Командировки':
     trips_create()
-if selected == 'Акты':
+elif selected == 'Акты':
     acts_create()
+elif selected == 'Настройки':
+    settings_create()
+
 
 
 
