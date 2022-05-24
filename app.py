@@ -146,7 +146,7 @@ def trips_create():
                 utils.sms_send(sms_forwarder, phone_forwarder)
                 if sm[3] > 1:
                     flag_money = True
-                    html_money = html_money + f"Командировка на {sm[3]} дня: <B>{sm[2]}</B><BR>Водитель : <B>{tsdb.get_name_by_id(sm[0])}</B><BR>Экспедитор : <B>'{tsdb.get_name_by_id(sm[5])}</B><BR>Сумма по: <B>{'50' if flag50 else '25'} BYN</B> {'(есть областной город)' if flag50 else '(нет областных городов)'} <BR><BR>"
+                    html_money = html_money + f"Командировка на {sm[3]} дня: <B>{sm[2]}</B><BR>Водитель : <B>{tsdb.get_name_by_id(sm[0])}</B><BR>Экспедитор : <B>{tsdb.get_name_by_id(sm[5])}</B><BR>Сумма по: <B>{'50' if flag50 else '25'} BYN</B> {'(есть областной город)' if flag50 else '(нет областных городов)'} <BR><BR>"
             else:
                 sms_driver = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} без экспедитора'
                 phone_driver = tsdb.get_phone(sm[0])
