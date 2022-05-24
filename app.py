@@ -13,8 +13,8 @@ from ts_db import Teo_DB
 ######### Read Config.ini #########
 path = "config.ini"
 
-PATH_DB = config_ini.get_setting(path, 'db_local', 'path_db')
-NAME_DB = config_ini.get_setting(path, 'db_local', 'name_db')
+PATH_DB = config_ini.get_setting(path, 'db', 'path_db')
+NAME_DB = config_ini.get_setting(path, 'db', 'name_db')
 TOWN50 = config_ini.get_setting(path, 'town', 'town50').split(',')
 logger = logging.basicConfig(filename='ts_log.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
