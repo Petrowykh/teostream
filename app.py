@@ -204,7 +204,7 @@ def settings_create():
     email = st.selectbox('Выберите адрес электронной почты',('a.petrovyh@belbohemia.by', 'e.korneychik@belbohemia.by'), index=0)
     email_password = st.text_input('Введите пароль', value=utils.MAIL_PASSWORD, type='password')
     list_money = st.multiselect('Письмо о командирвоочных', ['e.korneychik@belbohemia.by', 'n.kostkova@belbohemia.by', 'd.pyzh@belbohemia.by'])
-    print (email_password)
+    
     list_money = " ".join(list_money)
     if st.button('Сохранить'):
         config_ini.update_setting(path, 'mailserver', 'MAIL_USERNAME', email)
