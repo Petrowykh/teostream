@@ -1,8 +1,13 @@
+from faulthandler import disable
 import logging
+from time import sleep
 import streamlit as st
 import pandas as pd
 
-from datetime import datetime, timedelta
+from st_aggrid import AgGrid, GridUpdateMode
+from st_aggrid.grid_options_builder import GridOptionsBuilder
+
+from datetime import datetime, timedelta, date
 from streamlit_option_menu import option_menu
 import streamlit.components.v1 as components
 import config_ini, utils
@@ -11,6 +16,7 @@ from ts_db import Teo_DB
 
 
 ######### Read Config.ini #########
+
 path = "config.ini"
 
 PATH_DB = config_ini.get_setting(path, 'db', 'path_db')
@@ -112,6 +118,7 @@ def trips_create():
         if st.sidebar.button('Добавить'):
             tsdb.add_trips(trip_route, trip_date, tsdb.get_id_employee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
             st.info('Рейс добавлен')
+            st.experimental_rerun()
     else:
         st.sidebar.warning('Машин нет')
         
@@ -214,35 +221,112 @@ def settings_create():
 
 ############## Data ###############
 
-def data_create():
+def cars_edit():
+    
+    gd = GridOptionsBuilder.from_dataframe(tsdb.get_data_cars())
+    gd.configure_selection(selection_mode='single', use_checkbox=True)
+    gridoption = gd.build()
+    cars_table = AgGrid(tsdb.get_data_cars(), gridOptions=gridoption, update_mode=GridUpdateMode.SELECTION_CHANGED, theme='streamlit', reload_data=True, enable_enterprise_modules=True, key=1)
+    
+    select_row = cars_table['selected_rows'] 
+    edit_flag = False
+    
+    try:
+        edit_flag = True if select_row[0] else False
+    except Exception as e:
+        print (e)
+    if edit_flag:
+        form = st.sidebar.form('Edit')
+        
+        form.text(f"ID: {select_row[0]['id']}")
+        form.text(f"Собственность: {select_row[0]['Собственность']}")
+        our_car = True if select_row[0]['Собственность'] == '\u2714' else False
+        in_work = True if select_row[0]['В работе'] == '\u2714' else False 
+        if not our_car:
+            km = form.slider('Цена за километр', 0.4, 1.5, float(select_row[0]['Цена за км']), 0.1)
+            hour = form.slider('Цена за час', 15, 100, int(select_row[0]['Цена за час']), 1)
+        else:
+            km = 0
+            hour = 0
+        check_work = form.checkbox('В работе', value=in_work)
+        
+        print ('change')
+        if form.form_submit_button('Save'):
+            tsdb.update_cars(int(select_row[0]['id']), float(km), int(hour), check_work)
+            st.info('Save')
+            
+            st.experimental_rerun()
+    
+def report_create():
+    pass    
+
+def employees_edit():
     pass
 
-st.set_page_config(
-    page_title='Информационная система',
-    page_icon="🧊",
-    layout="wide")
-     
-st.title('Информационная система')
-st.text(f'Сегодня {str(datetime.now())}')
+def trips_delete():
+    trip_data = st.sidebar.date_input('Выберите дату', datetime.now())
+    gd_trips = GridOptionsBuilder.from_dataframe(tsdb.get_trips_of_date_for_delete(trip_data))
+    gd_trips.configure_selection(selection_mode='single', use_checkbox=True)
+    gridoption = gd_trips.build()
+    trip_table = AgGrid(tsdb.get_trips_of_date_for_delete(trip_data), gridOptions=gridoption, update_mode=GridUpdateMode.SELECTION_CHANGED, theme='streamlit', height=300)
+    
+    select_row = trip_table['selected_rows'] 
+    edit_flag = False
+    
+    try:
+        edit_flag = True if select_row[0] else False
+    except Exception as e:
+        print (e)
+    if edit_flag:
+        if st.button('Удалить'):
+            tsdb.delete_trip(select_row[0]['id'])
+            print ('Delete')
+            st.experimental_rerun()
 
-selected = option_menu(
-    menu_title='Главное меню',
-    options=['Табель', 'Командировки', 'Акты', 'Настройки', 'Данные'],
-    icons=['calendar-range', 'alarm', 'card-checklist', 'tools'],
-    orientation='horizontal',
-    default_index=0,
-    )
 
-if selected == 'Табель':
-    timesheets_create()
-elif selected == 'Командировки':
-    trips_create()
-elif selected == 'Акты':
-    acts_create()
-elif selected == 'Настройки':
-    settings_create()
-elif selected == 'Данные':
-    data_create()
+def data_create():
+    choose_data = st.sidebar.selectbox('Выберите данные',['Машины', 'Сотрудники', 'Командировки'])
+    if choose_data == 'Машины':
+        cars_edit()
+    elif choose_data == 'Сотрудники':
+        employees_edit()
+    elif choose_data == 'Командировки':
+        trips_delete()
+        
+                
+def main():
+    st.set_page_config(
+        page_title='Информационная система',
+        page_icon="🧊",
+        layout="wide")
+        
+    st.title('Информационная система')
+    st.text(f'Сегодня {str(date.today())}')
+
+    selected = option_menu(
+        menu_title='Главное меню',
+        options=['Табель', 'Командировки', 'Акты', 'Настройки', 'Данные', 'Отчеты'],
+        icons=['calendar-range', 'alarm', 'card-checklist', 'tools'],
+        orientation='horizontal',
+        default_index=0,
+        )
+
+    if selected == 'Табель':
+        timesheets_create()
+    elif selected == 'Командировки':
+        trips_create()
+    elif selected == 'Акты':
+        acts_create()
+    elif selected == 'Настройки':
+        settings_create()
+    elif selected == 'Данные':
+        data_create()
+    elif settings_create == 'Отчеты':
+        report_create()
+
+
+if __name__ == '__main__':
+    main()
 
 
 

@@ -20,6 +20,8 @@ class Teo_DB:
         """
         self.connection.close()
 
+    def commit(self):
+        self.connection.commit()
 
     ############## def for trips pages ###############
 <<<<<<< HEAD
@@ -70,7 +72,18 @@ class Teo_DB:
             Колесень А.Л.
         """
         fullname = self.get_any_q1('fullname', 'employees', 'id', id).split(' ')
-        return f"{fullname[0]} {fullname[1][0]}.{fullname[2][0]}."    
+        return f"{fullname[0]} {fullname[1][0]}.{fullname[2][0]}."  
+
+    def get_organization(self, id):
+        """
+        Get first name + IO
+        Args:
+            id 
+        Returns:
+            Колесень А.Л.
+        """
+        return self.get_any_q1('organization', 'employees', 'id', id)
+           
 
     def get_name(self, our, position, date):
         l = []
@@ -174,3 +187,33 @@ class Teo_DB:
         with self.connection:
             return self.cursor.execute("INSERT INTO acts (id_trip, price, unit, summa) VALUES (?, ?, ?, ?)", 
             (int(id_trip), price, int(unit), summa))
+
+    ############## def for data #############
+    def get_data_cars(self):
+        cars = self.cursor.execute("SELECT * FROM cars").fetchall()
+        df = pd.DataFrame(cars, columns=['id', 'Название', 'Госномер', 'Собственность', 'Цена за км', 'Цена за час', 'В работе', 'Владелец']).fillna(0)
+        df['Владелец'] = df['Владелец'].apply(lambda x: self.get_organization(x) if x != 0 else '')
+        df['Собственность'] = df['Собственность'].apply(lambda x: '\u2714' if x else '\u274C')
+        df['В работе'] = df['В работе'].apply(lambda x: '\u2714' if x else '\u274C')
+        return df
+    
+    def delete_trip(self, id):
+        with self.connection:
+            self.cursor.execute(f"DELETE FROM trips WHERE id = '{id}'")
+            self.commit()
+    
+    def update_cars(self, id, price_km, price_hour, active):
+        with self.connection:
+            self.cursor.execute(f"UPDATE cars SET price_km={price_km}, price_hour = {price_hour}, active={active} WHERE id = {id}")
+
+    def get_trips_of_date_for_delete(self, date):
+        with self.connection:
+            trips = self.cursor.execute(f"SELECT id, route, direction, driver, forwarder FROM trips WHERE date_route = '{date}' ORDER BY direction").fetchall()  
+        df = pd.DataFrame(trips, columns=['id', 'Путевой', 'Направление', 'Водитель', 'Экспедитор'])
+        df['Путевой'] = df['Путевой'].apply(lambda x: x if x != '0' else 'б/н')
+        df['Водитель'] = df['Водитель'].apply(lambda x: self.get_FIO(x) if x != 0 else '')
+        df['Экспедитор'] = df['Экспедитор'].apply(lambda x: self.get_FIO(x) if x != 0 else '')
+        if trips != None:
+            return df
+        else:
+            return 'Рейсов не запланировано'     
