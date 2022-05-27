@@ -209,3 +209,14 @@ class Teo_DB:
             return df
         else:
             return 'Рейсов не запланировано'     
+    
+    ########### Report ##############
+    def get_trips_of_month(self, driver_id=9, month='05', d_or_f=True):
+        
+        with self.connection:
+            trips = self.cursor.execute(f"SELECT date_route, days FROM trips WHERE strftime('%m', date_route) = '05' AND driver in (SELECT id FROM employees WHERE our) AND direction<>'Минск' AND driver={driver_id} ORDER BY date_route").fetchall()
+        df = pd.DataFrame(trips, columns=['date', 'days'])
+        
+
+        return df
+
