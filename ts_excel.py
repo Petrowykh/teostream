@@ -1,8 +1,9 @@
 from datetime import timedelta, datetime
 import xlwings as xw
+from pathlib import Path
 
 def create_report(list_trips):
-    wb = xw.Book('excel/ts_temp.xlsx')
+    wb = xw.Book(Path('excel/ts_temp.xlsx'))
     sheet = wb.sheets[0]
     sh_ready = sheet.copy()
     
@@ -25,7 +26,7 @@ def create_report(list_trips):
         sh_ready[f"C{row_ins}"].value = 'Доставка ТМЦ'
         sh_ready[f"D{row_ins}"].value = d_trips[1]
     sheet.delete()
-    wb.save('excel/new.xlsx')
+    wb.save(Path('excel/new.xlsx'))
     wb.close()
 
     
