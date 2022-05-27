@@ -24,15 +24,11 @@ class Teo_DB:
         self.connection.commit()
 
     ############## def for trips pages ###############
-<<<<<<< HEAD
     def get_one_in_table(self, *table, **columns):
         with self.connection:
             return self.cursor.execute(f"SELECT {}")
 
     def get_firstname(self, id):
-=======
-    def get_any_q1(self, value, table, param, func):
->>>>>>> 0c72e458bc202d64728987f55d18d9fbfb924587
         with self.connection:
             #print(f"SELECT {value} FROM {table} WHERE {param} = {func}")
             return self.cursor.execute(f"SELECT {value} FROM {table} WHERE {param} = '{func}'").fetchone()[0]
