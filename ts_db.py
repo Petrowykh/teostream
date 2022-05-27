@@ -14,6 +14,10 @@ class Teo_DB:
 
 
     ############## def for trips pages ###############
+    def get_one_in_table(self, *table, **columns):
+        with self.connection:
+            return self.cursor.execute(f"SELECT {}")
+
     def get_firstname(self, id):
         with self.connection:
             return self.cursor.execute(f"SELECT fullname FROM employees WHERE id='{id}'").fetchone()[0].split(' ')[0]
