@@ -12,15 +12,10 @@ from ts_db import Teo_DB
 
 ######### Read Config.ini #########
 path = "config.ini"
-    # font = get_setting(path, 'Settings', 'font')
-    # font_size = get_setting(path, 'Settings', 'font_size')
-    
-    # update_setting(path, "Settings", "font_size", "12")
-    # delete_setting(path, "Settings", "font_style")
 
-PATH_DB = config_ini.get_setting(path, 'db_local', 'PATH_DB')
-NAME_DB = config_ini.get_setting(path, 'db_local', 'NAME_DB')
-TOWN50 = ['Брест', 'Витебск', 'Могилев', 'Гомель', 'Гродно']
+PATH_DB = config_ini.get_setting(path, 'db', 'path_db')
+NAME_DB = config_ini.get_setting(path, 'db', 'name_db')
+TOWN50 = config_ini.get_setting(path, 'town', 'town50').split(',')
 logger = logging.basicConfig(filename='ts_log.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
 
@@ -32,6 +27,9 @@ except Exception as e:
 
 ######### TimeSheets #########
 def timesheets_create():
+    """
+    TimeSheet page
+    """
     st.subheader('Табель')
     choose = st.sidebar.selectbox('Выберите отдел ЛУ',
                         ('Логистика', 'Мезонин', 'Транспортный'))
@@ -40,6 +38,9 @@ def timesheets_create():
 
 ######### Acts ##########
 def acts_create():
+    """
+    Acts page
+    """
     summa = 0 # defaul value summa
     st.subheader('Акты наемных водителей')
     act_organization = st.sidebar.selectbox('Организация', tsdb.get_list_organization())
@@ -78,6 +79,9 @@ def acts_create():
 
 ######### Trips ############
 def trips_create():
+    """
+    Trips page
+    """
     st.subheader('Рейсы')
     trip_date = st.sidebar.date_input('Дата рейса', datetime.now()+timedelta(days=1))
 
@@ -85,8 +89,7 @@ def trips_create():
     trip_town = 'Минск'
     if trip_check_town:
         trip_town = st.sidebar.text_input('Маршрут', placeholder='Введите города через пробел')
-        trip_days = st.sidebar.slider(
-            'Количество дней командировки',
+        trip_days = st.sidebar.slider('Количество дней командировки',
             1, 3, (1))
     else:
         trip_town = 'Минск'
@@ -105,9 +108,9 @@ def trips_create():
             trip_check_forwarder = False
         if trip_check_forwarder:
             trip_forwarder_name = st.sidebar.selectbox('Выберите экспедитора', tsdb.get_name(trip_check_our, 'экспедитор', trip_date))
-            trip_forwarder = tsdb.get_id_emplyee(trip_forwarder_name)
+            trip_forwarder = tsdb.get_id_employee(trip_forwarder_name)
         if st.sidebar.button('Добавить'):
-            tsdb.add_trips(trip_route, trip_date, tsdb.get_id_emplyee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
+            tsdb.add_trips(trip_route, trip_date, tsdb.get_id_employee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
             st.info('Рейс добавлен')
     else:
         st.sidebar.warning('Машин нет')
@@ -135,15 +138,15 @@ def trips_create():
                     break    
                  
             if sm[5]:
-                sms_driver = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_firstname(sm[5])}'
+                sms_driver = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_FIO(sm[5])}'
                 phone_driver = tsdb.get_phone(sm[0])
                 utils.sms_send(sms_driver, phone_driver)
-                sms_forwarder = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_firstname(sm[0])}'
+                sms_forwarder = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_FIO(sm[0])}'
                 phone_forwarder = tsdb.get_phone(sm[5])
                 utils.sms_send(sms_forwarder, phone_forwarder)
                 if sm[3] > 1:
                     flag_money = True
-                    html_money = html_money + f"Командировка на {sm[3]} дня: <B>{sm[2]}</B><BR>Водитель : <B>{tsdb.get_name_by_id(sm[0])}</B><BR>Экспедитор : <B>'{tsdb.get_name_by_id(sm[5])}</B><BR>Сумма по: <B>{'50' if flag50 else '25'} BYN</B> {'(есть обсластной город)' if flag50 else '(нет обсластных городов)'} <BR><BR>"
+                    html_money = html_money + f"Командировка на {sm[3]} дня: <B>{sm[2]}</B><BR>Водитель : <B>{tsdb.get_name_by_id(sm[0])}</B><BR>Экспедитор : <B>'{tsdb.get_name_by_id(sm[5])}</B><BR>Сумма по: <B>{'50' if flag50 else '25'} BYN</B> {'(есть областной город)' if flag50 else '(нет областных городов)'} <BR><BR>"
             else:
                 sms_driver = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} без экспедитора'
                 phone_driver = tsdb.get_phone(sm[0])
@@ -152,7 +155,7 @@ def trips_create():
                     html_money = html_money + f"Командировка на {sm[3]} дня: <B>{sm[2]}</B><BR>Водитель : <B>{tsdb.get_name_by_id(sm[0])}</B><BR>Сумма : <B>{'50' if flag50 else '25'} BYN</B><BR><BR>"
                 utils.sms_send(sms_driver, phone_driver)
                 
-            html_letter = html_letter + '<LI>' + f"Путевой: <B>{sm[7]}</B> водитель <B>{tsdb.get_firstname(sm[0])}</B> {sm[2]} машина <B>{tsdb.get_number_car_clear(sm[4])}</B> дней: <B>{sm[3]}</B> экспедитор: <B>{tsdb.get_firstname(sm[5]) if sm[5] else ''}</B></LI>"
+            html_letter = html_letter + '<LI>' + f"Путевой: <B>{sm[7]}</B> водитель <B>{tsdb.get_FIO(sm[0])}</B> {sm[2]} машина <B>{tsdb.get_number_car_clear(sm[4])}</B> дней: <B>{sm[3]}</B> экспедитор: <B>{tsdb.get_FIO(sm[5]) if sm[5] else ''}</B></LI>"
             tsdb.update_status_ready(sm[6])
         html_letter = html_letter + '</OL>' + '</font>'
         html_money = html_money + '<BR> Спасибо!</font>'
@@ -176,23 +179,38 @@ def trips_create():
             progress_send.progress(percent_complite)
             
             if sm[5]:
-                sms_driver = f'{sm[1]} {sm[2]} Минск {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_firstname(sm[5])}'
+                sms_driver = f'{sm[1]} {sm[2]} Минск {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_FIO(sm[5])}'
                 phone_driver = tsdb.get_phone(sm[0])
                 utils.sms_send(sms_driver, phone_driver)
-                sms_forwarder = f'{sm[1]} {sm[2]} Минск {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_firstname(sm[0])}'
+                sms_forwarder = f'{sm[1]} {sm[2]} Минск {tsdb.get_number_car_clear(sm[4])} c {tsdb.get_FIO(sm[0])}'
                 phone_forwarder = tsdb.get_phone(sm[5])
                 utils.sms_send(sms_forwarder, phone_forwarder)
             else:
                 sms_driver = f'{sm[1]} {sm[2]} дни:{sm[3]} {tsdb.get_number_car_clear(sm[4])} без экспедитора'
                 phone_driver = tsdb.get_phone(sm[0])
                 utils.sms_send(sms_driver, phone_driver)
-            html_letter = html_letter + '<LI>' + f"Путевой: <B>{sm[7]}</B> водитель <B>{tsdb.get_firstname(sm[0])}</B> Минск машина <B>{tsdb.get_number_car_clear(sm[4])}</B> экспедитор: <B>{tsdb.get_firstname(sm[5]) if sm[5] else ''}</B></LI>"
+            html_letter = html_letter + '<LI>' + f"Путевой: <B>{sm[7]}</B> водитель <B>{tsdb.get_FIO(sm[0])}</B> Минск машина <B>{tsdb.get_number_car_clear(sm[4])}</B> экспедитор: <B>{tsdb.get_FIO(sm[5]) if sm[5] else ''}</B></LI>"
             tsdb.update_status_ready(sm[6])
             tsdb.update_status_ready(sm[6])
         html_letter = html_letter + '</OL>' + '</font>'
         utils.send_letter(f'Минск на {trip_date}', html_letter, ['e.korneychik@belbohemia.by', 't.firago@belbohemia.by', 't.drozd@belbohemia.by', 'guards@belbohemia.by', 'rampa@belbohemia.by'])
         table_trips.table(tsdb.get_trips_of_date(trip_date, True))
         utils.sms_send('Город готов')
+
+############# Settings #############
+def settings_create():
+    #col1, col2 = st.columns(2)
+    
+    email = st.selectbox('Выберите адрес электронной почты',('a.petrovyh@belbohemia.by', 'e.korneychik@belbohemia.by'), index=0)
+    email_password = st.text_input('Введите пароль', value=utils.MAIL_PASSWORD, type='password')
+    list_money = st.multiselect('Письмо о командирвоочных', ['e.korneychik@belbohemia.by', 'n.kostkova@belbohemia.by', 'd.pyzh@belbohemia.by'])
+    
+    list_money = " ".join(list_money)
+    if st.button('Сохранить'):
+        config_ini.update_setting(path, 'mailserver', 'MAIL_USERNAME', email)
+        config_ini.update_setting(path, 'mailserver', 'MAIL_PASSWORD', email_password)
+        config_ini.update_setting(path, 'email', 'EMAIL_MONEY', list_money)
+
 
 st.set_page_config(
     page_title='Информационная система',
@@ -212,10 +230,13 @@ selected = option_menu(
 
 if selected == 'Табель':
     timesheets_create()
-if selected == 'Командировки':
+elif selected == 'Командировки':
     trips_create()
-if selected == 'Акты':
+elif selected == 'Акты':
     acts_create()
+elif selected == 'Настройки':
+    settings_create()
+
 
 
 

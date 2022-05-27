@@ -45,14 +45,14 @@ path = "config.ini"
     # update_setting(path, "Settings", "font_size", "12")
     # delete_setting(path, "Settings", "font_style")
 
-SMS_USER = config_ini.get_setting(path, 'sms', 'SMS_USER')
-SMS_PASSWORD = config_ini.get_setting(path, 'sms', 'SMS_PASSWORD')
-SMS_URL = config_ini.get_setting(path, 'sms', 'SMS_URL')
+SMS_USER = config_ini.get_setting(path, 'sms', 'sms_user')
+SMS_PASSWORD = config_ini.get_setting(path, 'sms', 'sms_password')
+SMS_URL = config_ini.get_setting(path, 'sms', 'sms_url')
 
-MAIL_SERVER = config_ini.get_setting(path, 'mailserver', 'MAIL_SERVER')
-MAIL_PORT = config_ini.get_setting(path, 'mailserver', 'MAIL_PORT')
-MAIL_USERNAME = config_ini.get_setting(path, 'mailserver', 'MAIL_USERNAME')
-MAIL_PASSWORD = config_ini.get_setting(path, 'mailserver', 'MAIL_PASSWORD')
+MAIL_SERVER = config_ini.get_setting(path, 'mailserver', 'mail_server')
+MAIL_PORT = config_ini.get_setting(path, 'mailserver', 'mail_port')
+MAIL_USERNAME = config_ini.get_setting(path, 'mailserver', 'mail_username')
+MAIL_PASSWORD = config_ini.get_setting(path, 'mailserver', 'mail_password')
 
 
 def sms_send(text, phone='+375(29)6908632'):
