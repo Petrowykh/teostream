@@ -1,4 +1,3 @@
-from faulthandler import disable
 import logging
 from time import sleep
 import streamlit as st
@@ -12,6 +11,7 @@ from streamlit_option_menu import option_menu
 import streamlit.components.v1 as components
 import config_ini, utils
 from ts_db import Teo_DB
+import ts_excel
 
 
 
@@ -206,7 +206,9 @@ def trips_create():
 
 ############# Settings #############
 def settings_create():
-    #col1, col2 = st.columns(2)
+    """
+    Global options
+    """
     
     email = st.selectbox('Выберите адрес электронной почты',('a.petrovyh@belbohemia.by', 'e.korneychik@belbohemia.by'), index=0)
     email_password = st.text_input('Введите пароль', value=utils.MAIL_PASSWORD, type='password')
@@ -222,22 +224,22 @@ def settings_create():
 ############## Data ###############
 
 def cars_edit():
-    
+    """
+    Edit cars table
+    """
     gd = GridOptionsBuilder.from_dataframe(tsdb.get_data_cars())
     gd.configure_selection(selection_mode='single', use_checkbox=True)
     gridoption = gd.build()
     cars_table = AgGrid(tsdb.get_data_cars(), gridOptions=gridoption, update_mode=GridUpdateMode.SELECTION_CHANGED, theme='streamlit', reload_data=True, enable_enterprise_modules=True, key=1)
-    
     select_row = cars_table['selected_rows'] 
     edit_flag = False
-    
+    #TODO correct check edit_flag
     try:
         edit_flag = True if select_row[0] else False
     except Exception as e:
         print (e)
     if edit_flag:
         form = st.sidebar.form('Edit')
-        
         form.text(f"ID: {select_row[0]['id']}")
         form.text(f"Собственность: {select_row[0]['Собственность']}")
         our_car = True if select_row[0]['Собственность'] == '\u2714' else False
@@ -250,29 +252,46 @@ def cars_edit():
             hour = 0
         check_work = form.checkbox('В работе', value=in_work)
         
-        print ('change')
         if form.form_submit_button('Save'):
             tsdb.update_cars(int(select_row[0]['id']), float(km), int(hour), check_work)
-            st.info('Save')
-            
             st.experimental_rerun()
     
 def report_create():
-    pass    
+    list = []
+    list_trip = []
+    st.text('hello')
+    st.table(tsdb.get_trips_of_month('05'))
+    st.info('Create xlsx-file')
+    one1 = 0
+    many = 0
+    list.append(tsdb.get_FIO(9))
+    for i in tsdb.get_trips_of_month('05').values.tolist():
+        
+        list_trip.append([i[0], i[1]])
+        if i[1] == 1:
+            one1 = one1 + 1
+        else:
+            many = many + i[1]
+    list.append(list_trip)
+    list.append([one1, many])
+    ts_excel.create_report(list)
+    print(list)
+    
 
 def employees_edit():
     pass
 
 def trips_delete():
+    """
+    Delete trips in Data
+    """
     trip_data = st.sidebar.date_input('Выберите дату', datetime.now())
     gd_trips = GridOptionsBuilder.from_dataframe(tsdb.get_trips_of_date_for_delete(trip_data))
     gd_trips.configure_selection(selection_mode='single', use_checkbox=True)
     gridoption = gd_trips.build()
     trip_table = AgGrid(tsdb.get_trips_of_date_for_delete(trip_data), gridOptions=gridoption, update_mode=GridUpdateMode.SELECTION_CHANGED, theme='streamlit', height=300)
-    
     select_row = trip_table['selected_rows'] 
     edit_flag = False
-    
     try:
         edit_flag = True if select_row[0] else False
     except Exception as e:
@@ -280,11 +299,13 @@ def trips_delete():
     if edit_flag:
         if st.button('Удалить'):
             tsdb.delete_trip(select_row[0]['id'])
-            print ('Delete')
             st.experimental_rerun()
 
 
 def data_create():
+    """
+    Data option
+    """
     choose_data = st.sidebar.selectbox('Выберите данные',['Машины', 'Сотрудники', 'Командировки'])
     if choose_data == 'Машины':
         cars_edit()
@@ -321,7 +342,7 @@ def main():
         settings_create()
     elif selected == 'Данные':
         data_create()
-    elif settings_create == 'Отчеты':
+    elif selected == 'Отчеты':
         report_create()
 
 

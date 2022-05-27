@@ -62,6 +62,10 @@ Pympler==1.0.1
 pyparsing==3.0.9
 pyrsistent==0.18.1
 python-dateutil==2.8.2
+<<<<<<< HEAD
+=======
+python-dotenv==0.19.2
+>>>>>>> v 0.5 (add report)
 pytz==2022.1
 pytz-deprecation-shim==0.1.0.post0
 pywin32==304
@@ -70,11 +74,19 @@ pyzmq==22.3.0
 requests==2.27.1
 semver==2.13.0
 Send2Trash==1.8.0
+<<<<<<< HEAD
+=======
+simplejson==3.17.6
+>>>>>>> v 0.5 (add report)
 six==1.16.0
 smmap==5.0.0
 soupsieve==2.3.2.post1
 stack-data==0.2.0
 streamlit==1.9.0
+<<<<<<< HEAD
+=======
+streamlit-aggrid==0.2.3.post2
+>>>>>>> v 0.5 (add report)
 streamlit-option-menu==0.3.2
 terminado==0.13.3
 tinycss2==1.1.1
@@ -90,4 +102,8 @@ watchdog==2.1.8
 wcwidth==0.2.5
 webencodings==0.5.1
 widgetsnbextension==3.6.0
+<<<<<<< HEAD
+=======
+xlwings==0.27.8
+>>>>>>> v 0.5 (add report)
 zipp==3.8.0
