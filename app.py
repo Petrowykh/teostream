@@ -257,25 +257,55 @@ def cars_edit():
             st.experimental_rerun()
     
 def report_create():
-    list = []
-    list_trip = []
-    st.text('hello')
-    st.table(tsdb.get_trips_of_month('05'))
+    list_id = []
+    
+    #st.table(tsdb.get_trips_of_month('05'))
     st.info('Create xlsx-file')
-    one1 = 0
-    many = 0
-    list.append(tsdb.get_FIO(9))
-    for i in tsdb.get_trips_of_month('05').values.tolist():
+       
+    #print(tsdb.get_list_id_our(d_or_f=False))
+    for id in tsdb.get_list_id_our():
+        list_trip = []
+        list = []
+        one1 = 0
+        many = 0
+        list.append(tsdb.get_FIO(id))
         
-        list_trip.append([i[0], i[1]])
-        if i[1] == 1:
-            one1 = one1 + 1
-        else:
-            many = many + i[1]
-    list.append(list_trip)
-    list.append([one1, many])
-    ts_excel.create_report(list)
-    print(list)
+        for i in tsdb.get_trips_of_month(id_employees=id):
+            print (i)
+            list_trip.append([i[0], i[1]])
+            if i[1] == 1:
+                one1 = one1 + 1
+            else:
+                many = many + i[1]
+        list.append(list_trip)
+        list.append([one1, many])
+        list.append(id)
+        list.append(True)
+        list_id.append(list)
+        print(list)
+
+    for id in tsdb.get_list_id_our(d_or_f=False):
+        list_trip = []
+        list = []
+        one1 = 0
+        many = 0
+        list.append(tsdb.get_FIO(id))
+        
+        for i in tsdb.get_trips_of_month(id_employees=id, d_or_f=False):
+            print (i)
+            list_trip.append([i[0], i[1]])
+            if i[1] == 1:
+                one1 = one1 + 1
+            else:
+                many = many + i[1]
+        list.append(list_trip)
+        list.append([one1, many])
+        list.append(id)
+        list.append(False)
+        list_id.append(list)
+        print(list)
+    ts_excel.create_report(list_id)
+    
     
 
 def employees_edit():

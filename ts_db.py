@@ -1,5 +1,7 @@
 from datetime import timedelta
+from multiprocessing import connection
 import sqlite3
+from debugpy import connect
 import pandas as pd
 
 
@@ -25,7 +27,7 @@ class Teo_DB:
 
     ############## def for trips pages ###############
     
-    def get_firstname(self, id):
+    def get_any_q1(self, value, table, param, func):
         with self.connection:
             #print(f"SELECT {value} FROM {table} WHERE {param} = {func}")
             return self.cursor.execute(f"SELECT {value} FROM {table} WHERE {param} = '{func}'").fetchone()[0]
@@ -212,12 +214,28 @@ class Teo_DB:
             return 'Рейсов не запланировано'     
     
     ########### Report ##############
-    def get_trips_of_month(self, driver_id=9, month='05', d_or_f=True):
-        
-        with self.connection:
-            trips = self.cursor.execute(f"SELECT date_route, days FROM trips WHERE strftime('%m', date_route) = '05' AND driver in (SELECT id FROM employees WHERE our) AND direction<>'Минск' AND driver={driver_id} ORDER BY date_route").fetchall()
-        df = pd.DataFrame(trips, columns=['date', 'days'])
-        
+    def get_trips_of_month(self, id_employees, month='05', d_or_f=True):
+        list_dd = []
+        if d_or_f:
+            with self.connection:
+                for i in self.cursor.execute(f"SELECT date_route, days FROM trips WHERE strftime('%m', date_route) = '{month}' AND direction<>'Минск' AND driver={id_employees} ORDER BY date_route").fetchall():
+                    list_dd.append(i)
+        else:
+            with self.connection:
+                for i in self.cursor.execute(f"SELECT date_route, days FROM trips WHERE strftime('%m', date_route) = '{month}' AND direction<>'Минск' AND forwarder={id_employees} ORDER BY date_route").fetchall():
+                    list_dd.append(i)
 
-        return df
+        return list_dd
+    
+    def get_list_id_our(self, month='05', d_or_f=True):
+        l = []
+        if d_or_f:
+            with self.connection:
+                for i in self.cursor.execute(f"SELECT DISTINCT driver FROM trips WHERE strftime('%m', date_route) = '{month}' AND driver in (SELECT id FROM employees WHERE our) AND direction<>'Минск'").fetchall():
+                    l.append(i[0])
+        else:
+            with self.connection:
+                for i in self.cursor.execute(f"SELECT DISTINCT forwarder FROM trips WHERE strftime('%m', date_route) = '{month}' AND forwarder AND direction<>'Минск'").fetchall():
+                    l.append(i[0])
+        return l
 
