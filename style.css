@@ -2,6 +2,7 @@ table {
     width: 300px; /* Ширина таблицы */
     border-collapse: collapse; /* Убираем двойные линии между ячейками */
     background-color: blue;
+    table-layout: fixed;
 }
 
 td, th {

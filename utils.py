@@ -5,39 +5,6 @@ from email.mime.text import MIMEText
 from email.header import Header
 
 
-data = {
-    'name': ['Петровых', 'Корнейчик', 'Лепехо', 'Талах'],
-    ' 1' : [1,1,1,8],
-    ' 2' : [1,4,1,1],
-    ' 3' : [1,1,1,1],
-    ' 4' : [2,2,2,2],
-    ' 5' : [2,2,2,2],
-    ' 6' : [1,1,1,1],
-    ' 7' : [1,1,3,1],
-    ' 8' : [1,1,1,1],
-    ' 9' : [1,5,1,1],
-    '11' : [0,0,0,0],
-    '12' : [0,0,0,0],
-    '13' : [0,0,0,0],
-    '14' : [0,0,0,0],
-    '15' : [0,0,0,0],
-    '16' : [0,0,0,0],
-    '17' : [0,0,0,0],
-    '18' : [0,0,0,0],
-    '19' : [0,0,0,0],
-    '20' : [0,0,0,0],
-    '21' : [0,0,0,0],
-    '22' : [0,0,0,0],
-    '23' : [0,0,0,0],
-    '24' : [0,0,0,0],
-    '25' : [0,0,0,0],
-    '26' : [0,0,0,0],
-    '27' : [0,0,0,0],
-    '28' : [0,0,0,0],
-    '29' : [0,0,0,0],
-    '30' : [0,0,0,0],
-}
-
 path = "config.ini"
     # font = get_setting(path, 'Settings', 'font')
     # font_size = get_setting(path, 'Settings', 'font_size')
@@ -88,24 +55,30 @@ def send_letter(subject, htmlBody, recipient='a.petrovyh@belbohemia.by'):
         return e
     smtpObj.quit()
     
-def draw_table():
+def draw_table(table):
     def define_color(num):
         if not str(num).isdigit():
             return f">{num}"
         elif num == 1:
-            return "bgcolor='yellow'>"
-        elif num == 2:
-            return "bgcolor='red'>"
-        elif num == 4:
-            return "bgcolor='blue'>"
+            return "bgcolor='#8B008B'>"
+        elif num == 8 or num == 7 or num == 6:
+            return f"bgcolor='#000'>{num}"
+        elif num == 4: # trips
+            return "bgcolor='#87CEFA'>"
+        elif num == 2: # за с/с
+            return "bgcolor='#32CD32'>"
+        elif num == 3: # болен
+            return "bgcolor='#FF1493'>"
+        elif num == 5: # отпуск
+            return "bgcolor='#D4DE10'>"
         else:
             return "bgcolor='#000'>"
 
 
 
 
-    df = pd.DataFrame(data)
-    df_list = df.values.tolist()
+    df_list = table
+    len_date = len(table[0])-2
     #st.table(df)
     style_table = """
     <style>
@@ -119,7 +92,7 @@ def draw_table():
 
         th, td:first-child {
             background: #000;
-            color: #61bd5b;
+            color: #fff;
         }
         
         th, td {
@@ -130,6 +103,10 @@ def draw_table():
             
         }
 
+        tr {
+            color: #fff
+        }
+
         th:first-child, td:first-child {
             text-align: left;
             padding-right: 30px;
@@ -137,13 +114,14 @@ def draw_table():
     </style>
     """
     header = style_table + '<table><tr><th>Фамилия</th>'
-    plus_ = lambda x: str(x) if len(str(x)) > 1 else '_' + str(x)
-    for i in range(1,30):
+    header = header + '<th>Время</th><th>Переработка</th>'
+    plus_ = lambda x: str(x) if len(str(x)) > 1 else str(x) + '_'
+    for i in range(1,len_date):
         header = header + f'<th>{plus_(i)}</th>'
     header = header + '</tr>'
-    for i in range(0, 4):
+    for i in range(0, 2):
         header = header + '<tr>'
-        for j in range(0, 30):
+        for j in range(0, len_date+2):
             header = header + f'<td {define_color(df_list[i][j])}</td>'
             
         header = header + '</tr>'

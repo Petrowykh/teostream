@@ -13,6 +13,8 @@ import config_ini, utils
 from ts_db import Teo_DB
 import ts_excel
 
+from io import BytesIO
+
 
 
 ######### Read Config.ini #########
@@ -36,11 +38,25 @@ def timesheets_create():
     """
     TimeSheet page
     """
+    
+
     st.subheader('Табель')
     choose = st.sidebar.selectbox('Выберите отдел ЛУ',
                         ('Логистика', 'Мезонин', 'Транспортный'))
     if st.sidebar.button('Показать') == True:
-        components.html(utils.draw_table(), height=300, scrolling=True)
+        
+        t = [['Петровых А.В.',186.3,2.4,1,1,1,8,8,8,1,1,1,2,3,4,5,6,7,8,8,8,8,8,1,1,8,8,8,8,8,1,1,8,8],
+        ['Талах А.В.',138.3,0,1,1,1,8,8,8,1,1,2,8,8,8,8,8,1,8,8,8,8,8,1,1,8,8,8,8,8,1,5,8,8]]
+        components.html(utils.draw_table(t), height=300, scrolling=True)
+        # date_num = [str(i) for i in range(1,31)]
+        # print(date_num)
+        # df = pd.DataFrame(t, columns=('FIO', 'work_time', 'untime', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'))
+        # df = df.drop(columns=['work_time', 'untime'])
+        # for i in range(1,31):
+        #     df[f'{i}'] = df[f'{i}'].apply(lambda x: symbol(x))
+        # st.table(df)
+        
+
 
 ######### Acts ##########
 def acts_create():
@@ -305,6 +321,13 @@ def report_create():
         list_id.append(list)
         print(list)
     ts_excel.create_report(list_id)
+    st.markdown(f'<a href="excel/new.xlsx" download>Ссылка на локальный файл</a>', unsafe_allow_html=True)
+    # output = BytesIO()
+    # with open('excel/new.xlsx', 'r') as file:
+    #     st.download_button(label='Заггрузить', 
+    #                     data=output.getvalue(),
+    #                     file_name=file,
+    #                     mime="application/vnd.ms-excel")
     
     
 
