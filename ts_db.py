@@ -1,9 +1,10 @@
 from datetime import timedelta
 from multiprocessing import connection
-import sqlite3
+import sqlite3, json
 from debugpy import connect
 import pandas as pd
 
+MONTH_TIMESHEETS = {1:'jan', 2:'feb', 3:'mar', 4:'apr', 5:'may', 6:'jun', 7:'jul', 8:'aug', 9:'sep', 10:'oct', 11:'nov', 12:'dec'}
 
 class Teo_DB:
 
@@ -238,4 +239,41 @@ class Teo_DB:
                 for i in self.cursor.execute(f"SELECT DISTINCT forwarder FROM trips WHERE strftime('%m', date_route) = '{month}' AND forwarder AND direction<>'Минск'").fetchall():
                     l.append(i[0])
         return l
+    
+    ########### Timesheets ##############
+    def get_dd(self, month, div):
+        
+        l = []
+        with self.connection:
+            for i in self.cursor.execute(f"SELECT employee, jun FROM timesheets WHERE employee in (SELECT id FROM employees WHERE division='{div}')").fetchall():
+                dop = [self.get_FIO(i[0]), *json.loads(i[1])]
+                
+                l.append(dop)
+        return l
+
+    def add_timesheets_df(self, id_employee, date_trips, d_or_f):
+
+        with self.connection:
+            in_trips = self.cursor.execute(f"SELECT direction, days FROM trips WHERE driver={id_employee} and date_route='{date_trips}'").fetchone()
+            days_sheet = int(date_trips.split('-')[2])
+            month_sheet = int(date_trips.split('-')[1])
+            ts_data = json.loads(self.cursor.execute(f"SELECT {MONTH_TIMESHEETS[month_sheet]} from timesheets WHERE employee={id_employee}").fetchone()[0])
+            print(ts_data, ts_data[0])
+            if in_trips[0] == "Минск":
+                ts_data[0] = float(ts_data[0]) + 8.0 # add 8 hours
+                ts_data[days_sheet+1] = 8
+            elif in_trips[1] < 2:
+                ts_data[0] = ts_data[0] + 8 # add 8 hours
+                ts_data[days_sheet+1] = 8
+            else:
+                ts_data[0] = float(ts_data[0]) + 16.0 # add 8 hours
+                ts_data[days_sheet+1] = 9
+                ts_data[days_sheet+2] = 9
+            self.cursor.execute(f"UPDATE timesheets SET employee={id_employee}, {MONTH_TIMESHEETS[month_sheet]}={json.dumps(ts_data)}")
+
+
+            print (in_trips, ts_data)
+            
+
+        
 

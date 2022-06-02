@@ -44,17 +44,11 @@ def timesheets_create():
     choose = st.sidebar.selectbox('Выберите отдел ЛУ',
                         ('Логистика', 'Мезонин', 'Транспортный'))
     if st.sidebar.button('Показать') == True:
-        
-        t = [['Петровых А.В.',186.3,2.4,1,1,1,8,8,8,1,1,1,2,3,4,5,6,7,8,8,8,8,8,1,1,8,8,8,8,8,1,1,8,8],
-        ['Талах А.В.',138.3,0,1,1,1,8,8,8,1,1,2,8,8,8,8,8,1,8,8,8,8,8,1,1,8,8,8,8,8,1,5,8,8]]
-        components.html(utils.draw_table(t), height=300, scrolling=True)
-        # date_num = [str(i) for i in range(1,31)]
-        # print(date_num)
-        # df = pd.DataFrame(t, columns=('FIO', 'work_time', 'untime', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'))
-        # df = df.drop(columns=['work_time', 'untime'])
-        # for i in range(1,31):
-        #     df[f'{i}'] = df[f'{i}'].apply(lambda x: symbol(x))
-        # st.table(df)
+        #print(tsdb.get_dd(5, 'транспортный'))
+        t = tsdb.get_dd(5, 'транспортный')
+        components.html(utils.draw_table(t), height=400, scrolling=True)
+
+    tsdb.add_timesheets_df(3, '2022-06-15', True)    
         
 
 
@@ -219,6 +213,7 @@ def trips_create():
         utils.send_letter(f'Минск на {trip_date}', html_letter, ['e.korneychik@belbohemia.by', 't.firago@belbohemia.by', 't.drozd@belbohemia.by', 'guards@belbohemia.by', 'rampa@belbohemia.by'])
         table_trips.table(tsdb.get_trips_of_date(trip_date, True))
         utils.sms_send('Город готов')
+
 
 ############# Settings #############
 def settings_create():

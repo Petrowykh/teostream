@@ -4,9 +4,6 @@
 lib/
 lib/*
 
-db/
-db/*
-
 *.py[cod]
 *.pyc
 

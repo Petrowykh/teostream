@@ -58,21 +58,23 @@ def send_letter(subject, htmlBody, recipient='a.petrovyh@belbohemia.by'):
 def draw_table(table):
     def define_color(num):
         if not str(num).isdigit():
-            return f">{num}"
-        elif num == 1:
-            return "bgcolor='#8B008B'>"
+            return f"bgcolor='#00FF7F'>{num}"
+        elif num == 1: # happy
+            return "bgcolor='#FFA500'>"
         elif num == 8 or num == 7 or num == 6:
-            return f"bgcolor='#000'>{num}"
+            return f"bgcolor='#00FF7F'>{num}"
         elif num == 4: # trips
-            return "bgcolor='#87CEFA'>"
+            return "bgcolor='#7FFFD4'>к"
         elif num == 2: # за с/с
-            return "bgcolor='#32CD32'>"
+            return "bgcolor='#EE82EE'>"
         elif num == 3: # болен
-            return "bgcolor='#FF1493'>"
+            return "bgcolor='#FF0000'>"
         elif num == 5: # отпуск
-            return "bgcolor='#D4DE10'>"
+            return "bgcolor='#FFFF00'>"
+        elif num == 9: # 2 дня
+            return "colspan=2 bgcolor='#7FFFD4'>к"
         else:
-            return "bgcolor='#000'>"
+            return "bgcolor='#00FF7F'>"
 
 
 
@@ -91,20 +93,20 @@ def draw_table(table):
         }
 
         th, td:first-child {
-            background: #000;
-            color: #fff;
+            background: #00FF7F;
+            color: #000;
         }
         
         th, td {
             border-style: solid;
             border-width: 0 1px 1px 0;
-            border-color: #61bd5b;
+            border-color: #000;
             padding:5px;
             
         }
 
         tr {
-            color: #fff
+            color: #000
         }
 
         th:first-child, td:first-child {
@@ -119,11 +121,13 @@ def draw_table(table):
     for i in range(1,len_date):
         header = header + f'<th>{plus_(i)}</th>'
     header = header + '</tr>'
-    for i in range(0, 2):
+    for i in range(0, len(table)):
         header = header + '<tr>'
         for j in range(0, len_date+2):
+            if df_list[i][j] == 9 and df_list[i][j-1] == 9:
+                continue
             header = header + f'<td {define_color(df_list[i][j])}</td>'
-            
+                        
         header = header + '</tr>'
     header = header + '</table>'
     
