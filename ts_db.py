@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from multiprocessing import connection
 import sqlite3, json
 from debugpy import connect
@@ -244,36 +244,53 @@ class Teo_DB:
     def get_dd(self, month, div):
         
         l = []
+        name_month = MONTH_TIMESHEETS[month]
         with self.connection:
-            for i in self.cursor.execute(f"SELECT employee, jun FROM timesheets WHERE employee in (SELECT id FROM employees WHERE division='{div}')").fetchall():
+            for i in self.cursor.execute(f"SELECT employee, {name_month} FROM timesheets WHERE employee in (SELECT id FROM employees WHERE division='{div}')").fetchall():
                 dop = [self.get_FIO(i[0]), *json.loads(i[1])]
                 
                 l.append(dop)
         return l
-
-    def add_timesheets_df(self, id_employee, date_trips, d_or_f):
-
+    
+    def get_info_trip_ts(self, id):
         with self.connection:
-            in_trips = self.cursor.execute(f"SELECT direction, days FROM trips WHERE driver={id_employee} and date_route='{date_trips}'").fetchone()
+            return self.cursor.execute(f"SELECT date_route, driver, forwarder FROM trips WHERE id={id}").fetchone()
+
+    def update_timesheets_df(self, id_employee, date_trips, d_or_f, option=True):
+        #date_trips =date_trips.strftime('%Y-%m-%d')
+        if option:
+            hour = 8.0
+            sym = 8
+            dop_sym = 4
+        else:
+            hour = -8.0
+            sym = 0
+            dop_sym = 0
+        with self.connection:
+            if d_or_f:
+                in_trips = self.cursor.execute(f"SELECT direction, days FROM trips WHERE driver={id_employee} and date_route='{date_trips}'").fetchone()
+            else:
+                in_trips = self.cursor.execute(f"SELECT direction, days FROM trips WHERE forwarder={id_employee} and date_route='{date_trips}'").fetchone()
+            print(in_trips)
             days_sheet = int(date_trips.split('-')[2])
             month_sheet = int(date_trips.split('-')[1])
             ts_data = json.loads(self.cursor.execute(f"SELECT {MONTH_TIMESHEETS[month_sheet]} from timesheets WHERE employee={id_employee}").fetchone()[0])
-            print(ts_data, ts_data[0])
+            
             if in_trips[0] == "Минск":
-                ts_data[0] = float(ts_data[0]) + 8.0 # add 8 hours
-                ts_data[days_sheet+1] = 8
+                ts_data[0] = float(ts_data[0]) + hour # add 8 hours
+                ts_data[days_sheet+1] = sym
             elif in_trips[1] < 2:
                 ts_data[0] = ts_data[0] + 8 # add 8 hours
-                ts_data[days_sheet+1] = 8
+                ts_data[days_sheet+1] = dop_sym
             else:
-                ts_data[0] = float(ts_data[0]) + 16.0 # add 8 hours
-                ts_data[days_sheet+1] = 9
-                ts_data[days_sheet+2] = 9
-            self.cursor.execute(f"UPDATE timesheets SET employee={id_employee}, {MONTH_TIMESHEETS[month_sheet]}={json.dumps(ts_data)}")
+                ts_data[0] = float(ts_data[0]) + hour*2 # add 8 hours
+                ts_data[days_sheet+1] = int(dop_sym*2.25)
+                ts_data[days_sheet+2] = int(dop_sym*2.25)
+            #print (json.dumps(ts_data))
+            self.cursor.execute(f"UPDATE timesheets SET {MONTH_TIMESHEETS[month_sheet]}='{json.dumps(ts_data)}' WHERE employee={id_employee}")
 
 
-            print (in_trips, ts_data)
-            
+                       
 
         
 

@@ -44,11 +44,11 @@ def timesheets_create():
     choose = st.sidebar.selectbox('Выберите отдел ЛУ',
                         ('Логистика', 'Мезонин', 'Транспортный'))
     if st.sidebar.button('Показать') == True:
-        #print(tsdb.get_dd(5, 'транспортный'))
-        t = tsdb.get_dd(5, 'транспортный')
-        components.html(utils.draw_table(t), height=400, scrolling=True)
+        
+        table_html = tsdb.get_dd(6, 'транспортный')
+        components.html(utils.draw_table(table_html), height=400, scrolling=True)
 
-    tsdb.add_timesheets_df(3, '2022-06-15', True)    
+        
         
 
 
@@ -127,6 +127,11 @@ def trips_create():
             trip_forwarder = tsdb.get_id_employee(trip_forwarder_name)
         if st.sidebar.button('Добавить'):
             tsdb.add_trips(trip_route, trip_date, tsdb.get_id_employee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
+            if trip_check_forwarder:
+                tsdb.update_timesheets_df(tsdb.get_id_employee(trip_driver), trip_date.strftime('%Y-%m-%d'), True)
+                tsdb.update_timesheets_df(trip_forwarder, trip_date.strftime('%Y-%m-%d'), False)
+            else:
+                tsdb.update_timesheets_df(tsdb.get_id_employee(trip_driver), trip_date.strftime('%Y-%m-%d'), True)
             st.info('Рейс добавлен')
             st.experimental_rerun()
     else:
@@ -346,7 +351,16 @@ def trips_delete():
         print (e)
     if edit_flag:
         if st.button('Удалить'):
+            info_ts = tsdb.get_info_trip_ts(select_row[0]['id'])
+            tsdb.update_timesheets_df(info_ts[1], info_ts[0], True, False)
             tsdb.delete_trip(select_row[0]['id'])
+            
+            
+            
+            if info_ts[2]:
+                tsdb.update_timesheets_df(info_ts[2], info_ts[0], True, False)
+            
+
             st.experimental_rerun()
 
 
