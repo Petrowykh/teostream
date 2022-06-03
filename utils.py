@@ -66,18 +66,15 @@ def draw_table(table):
         elif num == 4: # trips
             return "bgcolor='#7FFFD4'>к"
         elif num == 2: # за с/с
-            return "bgcolor='#EE82EE'>"
+            return "bgcolor='#EE82EE'>c"
         elif num == 3: # болен
-            return "bgcolor='#FF0000'>"
+            return "bgcolor='#FF0000'>б"
         elif num == 5: # отпуск
-            return "bgcolor='#FFFF00'>"
+            return "bgcolor='#FFFF00'>о"
         elif num == 9: # 2 дня
             return "colspan=2 bgcolor='#7FFFD4'>к"
         else:
             return "bgcolor='#00FF7F'>"
-
-
-
 
     df_list = table
     len_date = len(table[0])-2
