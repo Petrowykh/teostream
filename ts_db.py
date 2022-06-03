@@ -59,6 +59,13 @@ class Teo_DB:
         with self.connection:
             return self.cursor.execute(f"SELECT fullname FROM employees WHERE id='{id}'").fetchone()[0].split(' ')[0]
     
+    def check_our(self, id):
+        with self.connection:
+            if self.cursor.execute(f"SELECT our FROM employees WHERE id='{id}'").fetchone()[0]:
+                return True
+            else:
+                return False
+
     def get_FIO(self, id):
         """
         Get first name + IO
