@@ -21,8 +21,8 @@ from io import BytesIO
 
 path = "config.ini"
 
-PATH_DB = config_ini.get_setting(path, 'db', 'path_db')
-NAME_DB = config_ini.get_setting(path, 'db', 'name_db')
+PATH_DB = config_ini.get_setting(path, 'db_local', 'path_db')
+NAME_DB = config_ini.get_setting(path, 'db_local', 'name_db')
 TOWN50 = config_ini.get_setting(path, 'town', 'town50').split(',')
 logger = logging.basicConfig(filename='ts_log.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
@@ -127,11 +127,12 @@ def trips_create():
             trip_forwarder = tsdb.get_id_employee(trip_forwarder_name)
         if st.sidebar.button('Добавить'):
             tsdb.add_trips(trip_route, trip_date, tsdb.get_id_employee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
-            if trip_check_forwarder:
-                tsdb.update_timesheets_df(tsdb.get_id_employee(trip_driver), trip_date.strftime('%Y-%m-%d'), True)
-                tsdb.update_timesheets_df(trip_forwarder, trip_date.strftime('%Y-%m-%d'), False)
-            else:
-                tsdb.update_timesheets_df(tsdb.get_id_employee(trip_driver), trip_date.strftime('%Y-%m-%d'), True)
+            if not(trip_check_our):
+                if trip_check_forwarder:
+                    tsdb.update_timesheets_df(tsdb.get_id_employee(trip_driver), trip_date.strftime('%Y-%m-%d'), True)
+                    tsdb.update_timesheets_df(trip_forwarder, trip_date.strftime('%Y-%m-%d'), False)
+                else:
+                    tsdb.update_timesheets_df(tsdb.get_id_employee(trip_driver), trip_date.strftime('%Y-%m-%d'), True)
             st.info('Рейс добавлен')
             st.experimental_rerun()
     else:
@@ -353,13 +354,9 @@ def trips_delete():
         if st.button('Удалить'):
             info_ts = tsdb.get_info_trip_ts(select_row[0]['id'])
             tsdb.update_timesheets_df(info_ts[1], info_ts[0], True, False)
-            tsdb.delete_trip(select_row[0]['id'])
-            
-            
-            
             if info_ts[2]:
                 tsdb.update_timesheets_df(info_ts[2], info_ts[0], True, False)
-            
+            tsdb.delete_trip(select_row[0]['id'])
 
             st.experimental_rerun()
 

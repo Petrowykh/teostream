@@ -7,8 +7,6 @@ lib/*
 *.py[cod]
 *.pyc
 
-db/
-db/*
 
 bin/
 bin/*
