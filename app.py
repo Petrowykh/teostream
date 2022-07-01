@@ -13,13 +13,10 @@ import config_ini, utils
 from ts_db import Teo_DB
 import ts_excel
 
-from io import BytesIO
-
-
 
 ######### Read Config.ini #########
 
-path = "config.ini"
+path = "config.ini" 
 
 PATH_DB = config_ini.get_setting(path, 'db', 'path_db')
 NAME_DB = config_ini.get_setting(path, 'db', 'name_db')
@@ -42,12 +39,12 @@ def timesheets_create():
 
     st.subheader('Табель')
     choose = st.sidebar.selectbox('Выберите отдел ЛУ',
-                        ('Логистика', 'Мезонин', 'Транспортный'))
-    if st.sidebar.button('Показать') == True:
-        
+                        ('ВСЕ', 'Логистика', 'Мезонин', 'Транспортный'))
+    if choose == 'ВСЕ':
         table_html = tsdb.get_dd(6, 'транспортный')
-        components.html(utils.draw_table(table_html), height=400, scrolling=True)
-
+        
+        components.html(utils.draw_table(table_html), height=400, scrolling=True,)
+        
         
         
 
@@ -287,7 +284,7 @@ def report_create():
         many = 0
         list.append(tsdb.get_FIO(id))
         
-        for i in tsdb.get_trips_of_month(id_employees=id):
+        for i in tsdb.get_trips_of_month(id_employees=id, month='06'):
             print (i)
             list_trip.append([i[0], i[1]])
             if i[1] == 1:

@@ -54,8 +54,51 @@ def send_letter(subject, htmlBody, recipient='a.petrovyh@belbohemia.by'):
     except smtplib.SMTPException as e:
         return e
     smtpObj.quit()
-    
+
+def draw_header():
+    style_table = """
+    <style>
+        table {
+            font-family: "Source Sans Pro", sans-serif;
+            font-size: 12px;
+            border-collapse: collapse;
+            text-align: center;
+            
+        }
+
+        th, td:first-child {
+            background: #00FF7F;
+            color: #000;
+        }
+        
+        th, td {
+            border-style: solid;
+            border-width: 0 1px 1px 0;
+            border-color: #000;
+            padding:5px;
+            
+        }
+
+        tr {
+            color: #000
+        }
+
+        th:first-child, td:first-child {
+            text-align: left;
+            padding-right: 30px;
+        }
+    </style>
+    """
+    header = style_table + '<table><tr><th>Фамилия</th>'
+    header = header + '<th>Время</th><th>Переработка</th>'
+    plus_ = lambda x: str(x) if len(str(x)) > 1 else str(x) + '_'
+    for i in range(1,31):
+        header = header + f'<th>{plus_(i)}</th>'
+    header = header + '</tr>'
+    return header
+
 def draw_table(table):
+    
     def define_color(num):
         if not str(num).isdigit():
             return f"bgcolor='#00FF7F'>{num}"
@@ -112,6 +155,7 @@ def draw_table(table):
         }
     </style>
     """
+    
     header = style_table + '<table><tr><th>Фамилия</th>'
     header = header + '<th>Время</th><th>Переработка</th>'
     plus_ = lambda x: str(x) if len(str(x)) > 1 else str(x) + '_'
@@ -120,9 +164,17 @@ def draw_table(table):
     header = header + '</tr>'
     for i in range(0, len(table)):
         header = header + '<tr>'
+        
+        count = 0
         for j in range(0, len_date+2):
-            if df_list[i][j] == 9 and df_list[i][j-1] == 9:
+            if df_list[i][j] == 9:
+                count=count+1
+            else:
+                count = 0
+            if count ==2:
+                count = 0
                 continue
+            
             header = header + f'<td {define_color(df_list[i][j])}</td>'
                         
         header = header + '</tr>'

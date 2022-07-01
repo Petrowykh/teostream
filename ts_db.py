@@ -222,7 +222,7 @@ class Teo_DB:
             return 'Рейсов не запланировано'     
     
     ########### Report ##############
-    def get_trips_of_month(self, id_employees, month='05', d_or_f=True):
+    def get_trips_of_month(self, id_employees, month, d_or_f=True):
         list_dd = []
         if d_or_f:
             with self.connection:
@@ -257,6 +257,7 @@ class Teo_DB:
                 dop = [self.get_FIO(i[0]), *json.loads(i[1])]
                 
                 l.append(dop)
+                l = sorted(l, key=lambda x:x[0])
         return l
     
     def get_info_trip_ts(self, id):
@@ -281,19 +282,24 @@ class Teo_DB:
             print(in_trips)
             days_sheet = int(date_trips.split('-')[2])
             month_sheet = int(date_trips.split('-')[1])
-            ts_data = json.loads(self.cursor.execute(f"SELECT {MONTH_TIMESHEETS[month_sheet]} from timesheets WHERE employee={id_employee}").fetchone()[0])
+            try:
+                ts_data = json.loads(self.cursor.execute(f"SELECT {MONTH_TIMESHEETS[month_sheet]} from timesheets WHERE employee={id_employee}").fetchone()[0])
+            except Exception as E:
+                print(E)
+                if ts_data == None:
+                    print("Сделать месяц")
             
             if in_trips[0] == "Минск":
                 ts_data[0] = float(ts_data[0]) + hour # add 8 hours
                 ts_data[days_sheet+1] = sym
             elif in_trips[1] < 2:
                 ts_data[0] = ts_data[0] + 8 # add 8 hours
-                ts_data[days_sheet+1] = dop_sym
+                ts_data[days_sheet+1] = int(dop_sym/2)
             else:
                 ts_data[0] = float(ts_data[0]) + hour*2 # add 8 hours
                 ts_data[days_sheet+1] = int(dop_sym*2.25)
                 ts_data[days_sheet+2] = int(dop_sym*2.25)
-            #print (json.dumps(ts_data))
+            print (json.dumps(ts_data))
             self.cursor.execute(f"UPDATE timesheets SET {MONTH_TIMESHEETS[month_sheet]}='{json.dumps(ts_data)}' WHERE employee={id_employee}")
 
 
