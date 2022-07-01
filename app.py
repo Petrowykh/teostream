@@ -277,7 +277,7 @@ def report_create():
     st.info('Create xlsx-file')
        
     #print(tsdb.get_list_id_our(d_or_f=False))
-    for id in tsdb.get_list_id_our():
+    for id in tsdb.get_list_id_our(month='06'):
         list_trip = []
         list = []
         one1 = 0
@@ -298,14 +298,14 @@ def report_create():
         list_id.append(list)
         print(list)
 
-    for id in tsdb.get_list_id_our(d_or_f=False):
+    for id in tsdb.get_list_id_our(month='06', d_or_f=False):
         list_trip = []
         list = []
         one1 = 0
         many = 0
         list.append(tsdb.get_FIO(id))
         
-        for i in tsdb.get_trips_of_month(id_employees=id, d_or_f=False):
+        for i in tsdb.get_trips_of_month(id_employees=id, month='06', d_or_f=False):
             print (i)
             list_trip.append([i[0], i[1]])
             if i[1] == 1:
@@ -318,7 +318,7 @@ def report_create():
         list.append(False)
         list_id.append(list)
         print(list)
-    ts_excel.create_report(list_id)
+    ts_excel.create_report(list_id, month='06')
     st.markdown(f'<a href="excel/new.xlsx" download>Ссылка на локальный файл</a>', unsafe_allow_html=True)
     # output = BytesIO()
     # with open('excel/new.xlsx', 'r') as file:

@@ -4,7 +4,7 @@ from openpyxl.styles.borders import Border, Side
 from openpyxl.styles import Alignment
 from pathlib import Path
 
-def create_report(list_trips):
+def create_report(list_trips, month):
     wb = opx.load_workbook(Path('excel/ts_temp.xlsx'))
     for id in list_trips:
         sheet = wb.active
@@ -17,7 +17,7 @@ def create_report(list_trips):
         sh_ready.title = id[0]
         sh_ready['C11'].value = id[0]
         sh_ready['C12'].value = 'водитель' if id[4] else 'экспедитор'
-        sh_ready['C2'].value = f"{id[3]}/05"
+        sh_ready['C2'].value = f"{id[3]}/{month}"
         sh_ready['D18'].value = id[2][0]
         sh_ready['D19'].value = id[2][1]
         sh_ready['G21'].value = id[0]

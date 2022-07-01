@@ -235,7 +235,7 @@ class Teo_DB:
 
         return list_dd
     
-    def get_list_id_our(self, month='05', d_or_f=True):
+    def get_list_id_our(self, month, d_or_f=True):
         l = []
         if d_or_f:
             with self.connection:
@@ -245,6 +245,7 @@ class Teo_DB:
             with self.connection:
                 for i in self.cursor.execute(f"SELECT DISTINCT forwarder FROM trips WHERE strftime('%m', date_route) = '{month}' AND forwarder AND direction<>'Минск'").fetchall():
                     l.append(i[0])
+        print(l)
         return l
     
     ########### Timesheets ##############
