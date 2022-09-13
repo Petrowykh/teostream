@@ -245,9 +245,21 @@ class Teo_DB:
             with self.connection:
                 for i in self.cursor.execute(f"SELECT DISTINCT forwarder FROM trips WHERE strftime('%m', date_route) = '{month}' AND forwarder AND direction<>'Минск'").fetchall():
                     l.append(i[0])
-        print(l)
+        #print(l)
         return l
-    
+
+    ########### Fuel accounting ##############
+    def get_list_of_car_by_date(self, date):
+        list_car = []
+        print(date)
+        with self.connection:
+            for i in self.cursor.execute(f"SELECT car_number FROM cars WHERE id in (SELECT car_id FROM trips WHERE date_route='{date}') and our").fetchall():
+                list_car.append(i[0])
+        
+        print(list_car)
+        return list_car
+
+
     ########### Timesheets ##############
     def get_dd(self, month, div):
         

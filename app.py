@@ -22,6 +22,7 @@ path = "config.ini"
 PATH_DB = config_ini.get_setting(path, 'db', 'path_db')
 NAME_DB = config_ini.get_setting(path, 'db', 'name_db')
 TOWN50 = config_ini.get_setting(path, 'town', 'town50').split(',')
+SUMMER_RATE = config_ini.get_setting(path, 'fuel', 'summer_rate')
 logger = logging.basicConfig(filename='ts_log.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
 
@@ -125,12 +126,12 @@ def trips_create():
             trip_forwarder = tsdb.get_id_employee(trip_forwarder_name)
         if st.sidebar.button('Добавить'):
             tsdb.add_trips(trip_route, trip_date, tsdb.get_id_employee(trip_driver), trip_days, trip_town, tsdb.get_id_car(trip_car), trip_check_our, trip_forwarder)
-            if not(trip_check_our):
-                if trip_check_forwarder:
-                    tsdb.update_timesheets_df(tsdb.get_id_employee(trip_driver), trip_date.strftime('%Y-%m-%d'), True)
-                    tsdb.update_timesheets_df(trip_forwarder, trip_date.strftime('%Y-%m-%d'), False)
-                else:
-                    tsdb.update_timesheets_df(tsdb.get_id_employee(trip_driver), trip_date.strftime('%Y-%m-%d'), True)
+            # if not(trip_check_our):
+            #     if trip_check_forwarder:
+            #         tsdb.update_timesheets_df(tsdb.get_id_employee(trip_driver), trip_date.strftime('%Y-%m-%d'), True)
+            #         tsdb.update_timesheets_df(trip_forwarder, trip_date.strftime('%Y-%m-%d'), False)
+            #     else:
+            #         tsdb.update_timesheets_df(tsdb.get_id_employee(trip_driver), trip_date.strftime('%Y-%m-%d'), True)
             st.info('Рейс добавлен')
             st.experimental_rerun()
     else:
@@ -218,6 +219,15 @@ def trips_create():
         table_trips.table(tsdb.get_trips_of_date(trip_date, True))
         utils.sms_send('Город готов')
 
+############# Fuels ############
+def fuels_create():
+    """
+    fuel accouting
+    """
+    st.subheader('Учет топлива')
+    trip_date = st.sidebar.date_input('Дата рейса', datetime.now()+timedelta(days=1))
+    car_list = st.sidebar.selectbox('Машины', tsdb.get_list_of_car_by_date(trip_date))
+
 
 ############# Settings #############
 def settings_create():
@@ -228,13 +238,14 @@ def settings_create():
     email = st.selectbox('Выберите адрес электронной почты',('a.petrovyh@belbohemia.by', 'e.korneychik@belbohemia.by'), index=0)
     email_password = st.text_input('Введите пароль', value=utils.MAIL_PASSWORD, type='password')
     list_money = st.multiselect('Письмо о командирвоочных', ['e.korneychik@belbohemia.by', 'n.kostkova@belbohemia.by', 'd.pyzh@belbohemia.by'])
-    
+    summer_rate = st.checkbox('Летняя норма', True)
+
     list_money = " ".join(list_money)
     if st.button('Сохранить'):
         config_ini.update_setting(path, 'mailserver', 'MAIL_USERNAME', email)
         config_ini.update_setting(path, 'mailserver', 'MAIL_PASSWORD', email_password)
         config_ini.update_setting(path, 'email', 'EMAIL_MONEY', list_money)
-
+        config_ini.update_setting(path, 'fuel', 'SUMMER_RATE', summer_rate)
 
 ############## Data ###############
 
@@ -380,7 +391,7 @@ def main():
 
     selected = option_menu(
         menu_title='Главное меню',
-        options=['Табель', 'Командировки', 'Акты', 'Настройки', 'Данные', 'Отчеты'],
+        options=['Командировки', 'Акты', 'Топливо', 'Настройки', 'Данные', 'Отчеты'],
         icons=['calendar-range', 'alarm', 'card-checklist', 'tools'],
         orientation='horizontal',
         default_index=0,
