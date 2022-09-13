@@ -98,7 +98,7 @@ class Teo_DB:
     def get_number_car(self, our, name):
         l = []
         with self.connection:
-            car = self.cursor.execute(f"SELECT car_number FROM cars WHERE owner={int(self.get_id_employee(name))}").fetchone()[0]
+            car = self.cursor.execute(f"SELECT car_number FROM cars WHERE owner={int(self.get_id_employee(name))} AND active").fetchone()[0]
             for i in self.cursor.execute(f"SELECT car_number FROM cars WHERE our={not(our)}").fetchall():
                 l.append(str(i).split("'")[1])
             try:
@@ -280,7 +280,7 @@ class Teo_DB:
                 in_trips = self.cursor.execute(f"SELECT direction, days FROM trips WHERE driver={id_employee} and date_route='{date_trips}'").fetchone()
             else:
                 in_trips = self.cursor.execute(f"SELECT direction, days FROM trips WHERE forwarder={id_employee} and date_route='{date_trips}'").fetchone()
-            print(in_trips)
+            #print(in_trips)
             days_sheet = int(date_trips.split('-')[2])
             month_sheet = int(date_trips.split('-')[1])
             try:
@@ -300,7 +300,7 @@ class Teo_DB:
                 ts_data[0] = float(ts_data[0]) + hour*2 # add 8 hours
                 ts_data[days_sheet+1] = int(dop_sym*2.25)
                 ts_data[days_sheet+2] = int(dop_sym*2.25)
-            print (json.dumps(ts_data))
+            #print (json.dumps(ts_data))
             self.cursor.execute(f"UPDATE timesheets SET {MONTH_TIMESHEETS[month_sheet]}='{json.dumps(ts_data)}' WHERE employee={id_employee}")
 
 

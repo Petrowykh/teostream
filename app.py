@@ -1,3 +1,4 @@
+import base64
 import logging
 from time import sleep
 import streamlit as st
@@ -41,7 +42,7 @@ def timesheets_create():
     choose = st.sidebar.selectbox('Выберите отдел ЛУ',
                         ('ВСЕ', 'Логистика', 'Мезонин', 'Транспортный'))
     if choose == 'ВСЕ':
-        table_html = tsdb.get_dd(6, 'транспортный')
+        table_html = tsdb.get_dd(7, 'транспортный')
         
         components.html(utils.draw_table(table_html), height=400, scrolling=True,)
         
@@ -180,8 +181,8 @@ def trips_create():
         html_letter = html_letter + '</OL>' + '</font>'
         html_money = html_money + '<BR> Спасибо!</font>'
         if flag_money:
-            utils.send_letter(f"Командировочные на {trip_date}", html_money, ['e.korneychik@belbohemia.by', 'n.kostkova@belbohemia.by', 'd.pyzh@belbohemia.by'])
-        utils.send_letter(f'Командировки на {trip_date}', html_letter, ['e.korneychik@belbohemia.by', 't.firago@belbohemia.by', 't.drozd@belbohemia.by', 'guards@belbohemia.by', 'rampa@belbohemia.by'])
+            utils.send_letter(f"Командировочные на {trip_date}", html_money, ['e.korneychik@belbohemia.by', 'n.kostkova@belbohemia.by', 'd.pyzh@belbohemia.by', 'v.polyakova@belbohemia.by'])
+        utils.send_letter(f'Командировки на {trip_date}', html_letter, ['e.korneychik@belbohemia.by', 'a.revtovich@belbohemia.by', 't.drozd@belbohemia.by', 'guards@belbohemia.by', 'rampa@belbohemia.by'])
         table_trips.table(tsdb.get_trips_of_date(trip_date, False))
         utils.sms_send('Командировки готовы')
         
@@ -213,7 +214,7 @@ def trips_create():
             tsdb.update_status_ready(sm[6])
             tsdb.update_status_ready(sm[6])
         html_letter = html_letter + '</OL>' + '</font>'
-        utils.send_letter(f'Минск на {trip_date}', html_letter, ['e.korneychik@belbohemia.by', 't.firago@belbohemia.by', 't.drozd@belbohemia.by', 'guards@belbohemia.by', 'rampa@belbohemia.by'])
+        utils.send_letter(f'Минск на {trip_date}', html_letter, ['e.korneychik@belbohemia.by', 'a.revtovich@belbohemia.by', 't.drozd@belbohemia.by', 'guards@belbohemia.by', 'rampa@belbohemia.by'])
         table_trips.table(tsdb.get_trips_of_date(trip_date, True))
         utils.sms_send('Город готов')
 
@@ -274,18 +275,18 @@ def report_create():
     list_id = []
     
     #st.table(tsdb.get_trips_of_month('05'))
-    st.info('Create xlsx-file')
+    st.info('Create')
        
     #print(tsdb.get_list_id_our(d_or_f=False))
-    for id in tsdb.get_list_id_our(month='06'):
+    for id in tsdb.get_list_id_our(month='08'):
         list_trip = []
         list = []
         one1 = 0
         many = 0
         list.append(tsdb.get_FIO(id))
         
-        for i in tsdb.get_trips_of_month(id_employees=id, month='06'):
-            print (i)
+        for i in tsdb.get_trips_of_month(id_employees=id, month='08'):
+            
             list_trip.append([i[0], i[1]])
             if i[1] == 1:
                 one1 = one1 + 1
@@ -296,17 +297,17 @@ def report_create():
         list.append(id)
         list.append(True)
         list_id.append(list)
-        print(list)
+        
 
-    for id in tsdb.get_list_id_our(month='06', d_or_f=False):
+    for id in tsdb.get_list_id_our(month='08', d_or_f=False):
         list_trip = []
         list = []
         one1 = 0
         many = 0
         list.append(tsdb.get_FIO(id))
         
-        for i in tsdb.get_trips_of_month(id_employees=id, month='06', d_or_f=False):
-            print (i)
+        for i in tsdb.get_trips_of_month(id_employees=id, month='08', d_or_f=False):
+            
             list_trip.append([i[0], i[1]])
             if i[1] == 1:
                 one1 = one1 + 1
@@ -317,16 +318,13 @@ def report_create():
         list.append(id)
         list.append(False)
         list_id.append(list)
-        print(list)
-    ts_excel.create_report(list_id, month='06')
-    st.markdown(f'<a href="excel/new.xlsx" download>Ссылка на локальный файл</a>', unsafe_allow_html=True)
-    # output = BytesIO()
-    # with open('excel/new.xlsx', 'r') as file:
-    #     st.download_button(label='Заггрузить', 
-    #                     data=output.getvalue(),
-    #                     file_name=file,
-    #                     mime="application/vnd.ms-excel")
-    
+        
+    ts_excel.create_report(list_id, month='08')
+    with open('excel/new.xlsx', 'rb') as file:
+        bf = file.read()
+        xls_str = base64.b64encode(bf).decode()
+    st.markdown(f'<a href="data:application/octet-stream;base64,{xls_str}" download="new.xlsx">Ссылка на локальный файл</a>', unsafe_allow_html=True)
+  
     
 
 def employees_edit():
@@ -388,12 +386,12 @@ def main():
         default_index=0,
         )
 
-    if selected == 'Табель':
-        timesheets_create()
-    elif selected == 'Командировки':
+    if selected == 'Командировки':
         trips_create()
     elif selected == 'Акты':
         acts_create()
+    elif selected == 'Топливо':
+        fuels_create()
     elif selected == 'Настройки':
         settings_create()
     elif selected == 'Данные':
