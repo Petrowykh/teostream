@@ -225,8 +225,11 @@ def fuels_create():
     fuel accouting
     """
     st.subheader('Учет топлива')
-    trip_date = st.sidebar.date_input('Дата рейса', datetime.now()+timedelta(days=1))
-    car_list = st.sidebar.selectbox('Машины', tsdb.get_list_of_car_by_date(trip_date))
+    
+    car_list = st.sidebar.selectbox('Машины', tsdb.get_list_of_car())
+    
+    fuel_trips = st.empty()
+    fuel_trips.table(tsdb.get_trips_by_car_for_accounting(car_list))
 
 
 ############# Settings #############

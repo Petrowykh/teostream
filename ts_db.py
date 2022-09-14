@@ -249,15 +249,27 @@ class Teo_DB:
         return l
 
     ########### Fuel accounting ##############
-    def get_list_of_car_by_date(self, date):
+    def get_list_of_car(self):
         list_car = []
-        print(date)
         with self.connection:
-            for i in self.cursor.execute(f"SELECT car_number FROM cars WHERE id in (SELECT car_id FROM trips WHERE date_route='{date}') and our").fetchall():
+            for i in self.cursor.execute(f"SELECT car_number FROM cars WHERE our and active").fetchall():
                 list_car.append(i[0])
         
         print(list_car)
         return list_car
+
+    def get_trips_by_car_for_accounting(self, car):
+        
+        with self.connection:
+            trips = self.cursor.execute(f"SELECT date_route, route, driver, last_km, distance, last_fuel, fillup, fuel_ok FROM trips WHERE car_id = (SELECT id FROM cars WHERE car_number = '{car}') AND not(fuel_ok) ORDER BY date_route").fetchall()  
+        df = pd.DataFrame(trips, columns=['Дата', 'Путевой', 'Водитель', 'Спидометр, выезд', 'Пробег', 'Остаток, выезд', 'Заправка', 'Внесено'])
+        df['Водитель'] = df['Водитель'].apply(lambda x: self.get_FIO(x) if x != 0 else '')
+        
+        if trips != None:
+            df = df.fillna('')
+            return df
+        else:
+            return 'Рейсов не запланировано'
 
 
     ########### Timesheets ##############
